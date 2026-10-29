@@ -371,7 +371,7 @@ MCP 需要同时支持 2025-11-25 和 2026-07-28 两版规范。工具注解要�
 
 ## 12. 技术选型建议
 
-- **内核：TypeScript（Node ≥ 22.13，2026-10-29 由 Go 改定）**。理由：目标用户（Claude Code、Codex、Gemini CLI）机器上都有 Node，`npx hivemem` 一条命令就能装；`node:sqlite` 内置，不需要原生编译，Windows 安装最省事；MCP 的 TS SDK 最成熟；transformers.js 可以在本地跑嵌入，不依赖 Python；内核、Web 控制台和插件（OpenCode、OpenClaw 都是 TS）可以用同一种语言；claude-mem、Supermemory 已经验证过这条分发路径。Python 只做薄 SDK 和框架适配器（LangGraph、CrewAI、ADK）。代价是 hook 冷启动：实测约 116ms，其中 Node 启动约 71ms，v0.2 用 daemon 压缩。
+- **内核：TypeScript（Node ≥ 22.18，2026-10-29 由 Go 改定）**。理由：目标用户（Claude Code、Codex、Gemini CLI）机器上都有 Node，`npx hivemem` 一条命令就能装；`node:sqlite` 内置，不需要原生编译，Windows 安装最省事；MCP 的 TS SDK 最成熟；transformers.js 可以在本地跑嵌入，不依赖 Python；内核、Web 控制台和插件（OpenCode、OpenClaw 都是 TS）可以用同一种语言；claude-mem、Supermemory 已经验证过这条分发路径。Python 只做薄 SDK 和框架适配器（LangGraph、CrewAI、ADK）。代价是 hook 冷启动：实测约 116ms，其中 Node 启动约 71ms，v0.2 用 daemon 压缩。
 - **SDK**：Python 和 TypeScript 做成薄客户端（REST/MCP），框架适配器放在独立的包里。
 - **Web 控制台**：TS + 轻量框架，内嵌进二进制（`hivemem web`）。
 - **许可证：Apache-2.0 + 托管服务 open-core（已定要做托管）**。内核、适配器、Web 控制台和单租户团队服务器全部开源；多租户控制面、SSO/SCIM、托管模型和 SLA 放在专有的托管版里；名称注册商标。这和 Supermemory "核心闭源、本地版限量" 形成鲜明对比，也避开 AGPL 给企业采用带来的阻力。为托管服务预留的设计见 ARCHITECTURE §15。

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640" role="img" aria-label="HiveMem architecture: agents and tools, access layer, core (write path, op ledger, recall), storage and transport.">
+<title>HiveMem architecture: agents and tools, access layer, core (write path, op ledger, recall), storage and transport.</title>
+<defs><marker id="arr" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6E7681"/></marker></defs>
+  <rect x="20" y="12" width="920" height="84" rx="12" fill="none" stroke="#30363D" stroke-width="1.2"/>
+  <text x="36" y="34" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" font-weight="700" letter-spacing="1.2" fill="#9198A1">AGENTS &amp; TOOLS</text>
+  <rect x="36" y="46" width="112" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="50" cy="63" r="4.5" fill="#3FB950"/><text x="62" y="67.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">Claude Code</text>
+  <rect x="158" y="46" width="80" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="172" cy="63" r="4.5" fill="#3FB950"/><text x="184" y="67.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">Codex</text>
+  <rect x="248" y="46" width="106" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="262" cy="63" r="4.5" fill="#3FB950"/><text x="274" y="67.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">CodeBuddy</text>
+  <rect x="364" y="46" width="84" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="378" cy="63" r="4.5" fill="#3FB950"/><text x="390" y="67.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">Cursor</text>
+  <rect x="458" y="46" width="104" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="472" cy="63" r="4.5" fill="#A371F7"/><text x="484" y="67.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">Gemini CLI</text>
+  <rect x="572" y="46" width="156" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="586" cy="63" r="4.5" fill="#A371F7"/><text x="598" y="67.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">ChatGPT · Claude.ai</text>
+  <rect x="738" y="46" width="184" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="752" cy="63" r="4.5" fill="#A371F7"/><text x="764" y="67.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">LangGraph · ADK · CrewAI</text>
+  <line x1="480" y1="100" x2="480" y2="124" stroke="#6E7681" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <rect x="20" y="118" width="920" height="76" rx="12" fill="none" stroke="#30363D" stroke-width="1.2"/>
+  <text x="36" y="140" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" font-weight="700" letter-spacing="1.2" fill="#9198A1">ACCESS</text>
+  <rect x="36" y="148" width="200" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="50" cy="165" r="4.5" fill="#3FB950"/><text x="62" y="169.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">hook shim</text>
+  <rect x="248" y="148" width="200" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="262" cy="165" r="4.5" fill="#3FB950"/><text x="274" y="169.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">CLI</text>
+  <rect x="460" y="148" width="200" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="474" cy="165" r="4.5" fill="#D29922"/><text x="486" y="169.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">MCP server</text>
+  <rect x="672" y="148" width="270" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="686" cy="165" r="4.5" fill="#A371F7"/><text x="698" y="169.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">REST · Python / TS SDK</text>
+  <line x1="480" y1="198" x2="480" y2="222" stroke="#6E7681" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <rect x="20" y="216" width="920" height="280" rx="12" fill="none" stroke="#30363D" stroke-width="1.2"/>
+  <text x="36" y="238" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" font-weight="700" letter-spacing="1.2" fill="#9198A1">HIVEMEM CORE</text>
+  <text x="36" y="262" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="700" fill="#E6EDF3">Write path</text>
+  <rect x="36" y="272" width="200" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="50" cy="288" r="4.5" fill="#3FB950"/><text x="62" y="292.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">redact secrets</text>
+  <rect x="36" y="312" width="200" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="50" cy="328" r="4.5" fill="#3FB950"/><text x="62" y="332.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">dedup · corroborate</text>
+  <rect x="36" y="352" width="200" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="50" cy="368" r="4.5" fill="#3FB950"/><text x="62" y="372.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">claim-key conflicts</text>
+  <rect x="36" y="392" width="200" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="50" cy="408" r="4.5" fill="#3FB950"/><text x="62" y="412.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">tentative → committed</text>
+  <rect x="268" y="252" width="424" height="184" rx="12" fill="#2B2111" stroke="#F5A524" stroke-width="2"/>
+  <polygon points="320.0,270.0 346.0,285.0 346.0,315.0 320.0,330.0 294.0,315.0 294.0,285.0" fill="none" stroke="#F5A524" stroke-width="2.5"/>
+  <circle cx="320" cy="300" r="7" fill="#F5A524"/>
+  <text x="364" y="292" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="20" font-weight="700" fill="#E6EDF3">Op ledger</text>
+  <text x="364" y="314" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#9198A1">the single source of truth</text>
+  <text x="290" y="352" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" fill="#E6EDF3"><tspan fill="#F5A524">▸ </tspan>append-only ops · HLC clock · sha256</text>
+  <text x="290" y="374" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" fill="#E6EDF3"><tspan fill="#F5A524">▸ </tspan>deterministic fold → identical replicas</text>
+  <text x="290" y="396" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" fill="#E6EDF3"><tspan fill="#F5A524">▸ </tspan>concurrent edits → sibling versions</text>
+  <text x="290" y="418" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" fill="#E6EDF3"><tspan fill="#F5A524">▸ </tspan>every op carries runtime · agent · session</text>
+  <line x1="240" y1="340" x2="266" y2="340" stroke="#F5A524" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="694" y1="340" x2="718" y2="340" stroke="#F5A524" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="724" y="262" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="700" fill="#E6EDF3">Recall path</text>
+  <rect x="724" y="272" width="200" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="738" cy="288" r="4.5" fill="#3FB950"/><text x="750" y="292.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">FTS (CJK bigram)</text>
+  <rect x="724" y="312" width="200" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="738" cy="328" r="4.5" fill="#3FB950"/><text x="750" y="332.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">score · scope chain</text>
+  <rect x="724" y="352" width="200" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="738" cy="368" r="4.5" fill="#3FB950"/><text x="750" y="372.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">token-budget packing</text>
+  <rect x="724" y="392" width="200" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="738" cy="408" r="4.5" fill="#3FB950"/><text x="750" y="412.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">injection receipts</text>
+  <rect x="36" y="448" width="214" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="50" cy="464" r="4.5" fill="#3FB950"/><text x="62" y="468.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">identity · scopes</text>
+  <rect x="260" y="448" width="214" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="274" cy="464" r="4.5" fill="#D29922"/><text x="286" y="468.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">policy · ACL</text>
+  <rect x="484" y="448" width="214" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="498" cy="464" r="4.5" fill="#A371F7"/><text x="510" y="468.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">memory experts (MoE)</text>
+  <rect x="708" y="448" width="214" height="32" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="722" cy="464" r="4.5" fill="#A371F7"/><text x="734" y="468.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="500" fill="#E6EDF3">dreamer · self-evolution</text>
+  <line x1="480" y1="500" x2="480" y2="524" stroke="#6E7681" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <rect x="20" y="518" width="920" height="82" rx="12" fill="none" stroke="#30363D" stroke-width="1.2"/>
+  <text x="36" y="540" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" font-weight="700" letter-spacing="1.2" fill="#9198A1">STORAGE &amp; TRANSPORT</text>
+  <rect x="36" y="554" width="250" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="50" cy="571" r="4.5" fill="#3FB950"/><text x="62" y="575.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">SQLite · WAL · FTS5</text>
+  <rect x="300" y="554" width="250" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="314" cy="571" r="4.5" fill="#D29922"/><text x="326" y="575.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">git mode  .hivemem/</text>
+  <rect x="564" y="554" width="280" height="34" rx="7" fill="#161B22" stroke="#30363D" stroke-width="1.2"/>
+  <circle cx="578" cy="571" r="4.5" fill="#A371F7"/><text x="590" y="575.5"  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" font-weight="500" fill="#E6EDF3">sync · Postgres · hosted</text>
+  <circle cx="640" cy="622" r="4.5" fill="#3FB950"/><text x="650" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" fill="#9198A1">shipped</text>
+  <circle cx="722" cy="622" r="4.5" fill="#D29922"/><text x="732" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" fill="#9198A1">in progress</text>
+  <circle cx="820" cy="622" r="4.5" fill="#A371F7"/><text x="830" y="626" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" fill="#9198A1">planned</text>
+</svg>

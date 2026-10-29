@@ -54,7 +54,7 @@ export function normalizePayload(eventArg: string | undefined, raw: Record<strin
 }
 
 /** Explicit "remember this" phrasing in a user prompt is captured as a user-stated memory (rules mode). */
-const REMEMBER = /^\s*(?:请\s*)?(?:记住|记一下|remember(?: that)?)\s*[:：,，]?\s*(.+)$/is;
+const REMEMBER = /^\s*(?:请\s*)?(?:记住|记一下|覚えておいて|覚えて|기억해\s*줘|기억해|remember(?: that)?)\s*[:：,，、]?\s*(.+)$/is;
 
 export function extractRemember(prompt: string): string | undefined {
   const m = REMEMBER.exec(prompt);

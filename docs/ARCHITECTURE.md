@@ -728,7 +728,7 @@ rules:
 
 ---
 
-## 16. 代码结构（TypeScript，Node ≥ 22.13）
+## 16. 代码结构（TypeScript，Node ≥ 22.18）
 
 ✅ 表示 v0.1 已实现，其余是规划中的目录。
 

@@ -56,6 +56,15 @@ describe('write path', () => {
     });
   });
 
+  it('resolves the short ids the CLI prints (suffix) as well as prefixes', () => {
+    const as = fresh();
+    withCtx(as('cli'), (c) => {
+      const { id } = remember(c, { content: 'Indent with 2 spaces', method: 'user-stated' });
+      assert.equal(c.store.resolveId(id.slice(-6).toLowerCase()), id);
+      assert.equal(c.store.resolveId(id.slice(0, 12)), id);
+    });
+  });
+
   it('commits an agent statement once a second runtime corroborates it', () => {
     const as = fresh();
     const fact = { content: '测试命令是 npm test', method: 'agent-stated' as const };
@@ -138,6 +147,8 @@ describe('hooks', () => {
   it('extracts explicit remember phrasing only', () => {
     assert.equal(extractRemember('记住：用 pnpm'), '用 pnpm');
     assert.equal(extractRemember('remember that we deploy on Fridays'), 'we deploy on Fridays');
+    assert.equal(extractRemember('覚えておいて：API は snake_case'), 'API は snake_case');
+    assert.equal(extractRemember('기억해 줘: 배포는 금요일'), '배포는 금요일');
     assert.equal(extractRemember('你还记得上次的报错吗'), undefined);
   });
 });

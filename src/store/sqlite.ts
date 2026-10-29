@@ -150,9 +150,10 @@ export class SqliteStore {
     return row ? (JSON.parse(row.state as string) as MemoryState) : undefined;
   }
 
-  /** Resolve an id or a unique id prefix (ULIDs are long; the CLI shows short ones). */
-  resolveId(prefix: string): string | undefined {
-    const rows = this.db.prepare('SELECT id FROM memories WHERE id LIKE ? LIMIT 2').all(`${prefix.toUpperCase()}%`) as Row[];
+  /** Resolve a unique id prefix or suffix (ULIDs are long; the CLI shows the last 6 characters). */
+  resolveId(part: string): string | undefined {
+    const p = part.toUpperCase();
+    const rows = this.db.prepare('SELECT id FROM memories WHERE id LIKE ? OR id LIKE ? LIMIT 2').all(`${p}%`, `%${p}`) as Row[];
     return rows.length === 1 ? (rows[0]!.id as string) : undefined;
   }
 
