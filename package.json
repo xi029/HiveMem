@@ -1,0 +1,38 @@
+{
+  "name": "hivemem",
+  "version": "0.1.0-dev",
+  "description": "Shared, versioned, self-evolving memory for every agent you use - Claude Code, Codex, CodeBuddy, Cursor and multi-agent frameworks.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "hivemem": "dist/cli/main.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test --test-reporter=spec \"test/**/*.test.ts\"",
+    "dev": "node src/cli/main.ts"
+  },
+  "keywords": [
+    "memory",
+    "agents",
+    "multi-agent",
+    "mcp",
+    "claude-code",
+    "codex",
+    "codebuddy",
+    "llm"
+  ],
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "5.9"
+  }
+}
