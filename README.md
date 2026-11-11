@@ -10,15 +10,13 @@
 
 Claude Code · Codex · CodeBuddy · Cursor · Gemini CLI · multi-agent frameworks
 
-<p>
-  <img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue.svg">
-  <img alt="Node >= 22.18" src="https://img.shields.io/badge/node-%E2%89%A5%2022.18-339933?logo=node.js&logoColor=white">
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white">
-  <img alt="Runtime dependencies: 0" src="https://img.shields.io/badge/runtime%20deps-0-success">
-  <img alt="Platforms" src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey">
-  <img alt="Status: v0.1-dev" src="https://img.shields.io/badge/status-v0.1--dev-orange">
-  <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
-</p>
+![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
+![Node.js 22.18+](https://img.shields.io/badge/Node.js-22.18%2B-339933?logo=nodedotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20deps-0-success)
+![Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)
+![Status: v0.1-dev](https://img.shields.io/badge/status-v0.1--dev-orange)
+![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
 **English** · [简体中文](docs/i18n/README.zh-CN.md) · [日本語](docs/i18n/README.ja.md) · [한국어](docs/i18n/README.ko.md)
 
