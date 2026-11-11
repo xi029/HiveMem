@@ -55,9 +55,11 @@ export class SqliteStore {
   constructor(path: string) {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
     this.db = new DatabaseSync(path);
-    this.db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA synchronous=NORMAL;');
-    this.db.exec(SCHEMA);
     try {
+      // Journal initialization can contend with another opener or WAL recovery too.
+      this.db.exec('PRAGMA busy_timeout=5000;');
+      this.db.exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;');
+      this.db.exec(SCHEMA);
       this.transaction(() => {
         const columns = (table: string) => (this.db.prepare(`PRAGMA table_info(${table})`).all() as Row[]).map((r) => r.name);
         if (!columns('memories').includes('content_norm')) this.db.exec("ALTER TABLE memories ADD COLUMN content_norm TEXT NOT NULL DEFAULT ''");

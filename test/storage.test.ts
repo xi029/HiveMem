@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { spawn } from 'node:child_process';
+import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
 import { after, before, describe, it } from 'node:test';
 import { SqliteStore } from '../src/store/sqlite.ts';
@@ -15,6 +16,46 @@ before(() => { directory = mkdtempSync(join(tmpdir(), 'hivemem-storage-')); });
 after(() => { rmSync(directory, { recursive: true, force: true }); });
 
 describe('storage upgrade and recovery', () => {
+  it('closes the database handle when initialization fails', () => {
+    const path = join(directory, 'invalid.db');
+    writeFileSync(path, 'This is not a SQLite database');
+    assert.throws(() => new SqliteStore(path), /not a database/);
+    // Windows refuses deletion when the failed constructor leaves the handle open.
+    rmSync(path);
+    assert.equal(existsSync(path), false);
+  });
+
+  it('waits for another process to release its lock before initializing WAL', { timeout: 15_000 }, async () => {
+    const path = join(directory, 'startup-lock.db');
+    const code = `import {DatabaseSync} from 'node:sqlite';
+      const db = new DatabaseSync(process.argv[1]);
+      db.exec('CREATE TABLE existing (value TEXT); BEGIN EXCLUSIVE');
+      process.stdout.write('locked\\n');
+      process.stdin.once('data', () => setTimeout(() => {
+        db.exec('COMMIT'); db.close(); process.stdin.destroy();
+      }, 300));`;
+    const child = spawn(process.execPath, ['--input-type=module', '-e', code, path], { stdio: ['pipe', 'pipe', 'pipe'] });
+    let stderr = '';
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    const done = once(child, 'close');
+    void done.catch(() => {});
+    const timer = setTimeout(() => child.kill(), 10_000);
+    try {
+      await Promise.race([once(child.stdout, 'data'), done.then(() => { throw new Error(stderr || 'lock holder exited early'); })]);
+      child.stdin.end('release soon');
+      const store = new SqliteStore(path);
+      try {
+        assert.equal(store.getMeta('projection_version'), '2');
+        assert.equal(store.db.prepare('PRAGMA journal_mode').get()!.journal_mode, 'wal');
+      } finally { store.close(); }
+      assert.equal((await done)[0], 0, stderr);
+    } finally {
+      clearTimeout(timer);
+      if (child.exitCode === null) child.kill();
+      await done;
+    }
+  });
+
   it('upgrades the original schema without changing ops and rebuilds conflict projections', () => {
     const path = join(directory, 'legacy.db');
     const db = new DatabaseSync(path);
