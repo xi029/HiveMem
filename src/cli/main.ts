@@ -14,18 +14,19 @@ const HELP = `hivemem - shared memory for all your agents
 Usage:
   hivemem remember <text> [--kind fact|decision|event|procedure] [--key subject:aspect]
                           [--scope project|user|agent] [--as user|agent] [--tags a,b] [--importance 1-5]
-  hivemem recall <query> [--budget 1200] [--json]
+  hivemem recall <query> [--budget 1200] [--tentative] [--json]
   hivemem brief                      what a new session in this project would see
   hivemem list [--status s] [--kind k] [--all]
   hivemem show <id>                  versions, provenance and ops
   hivemem inbox                      tentative, conflicted and quarantined memories
   hivemem confirm|forget|archive <id>
-  hivemem revise <id> <text>
-  hivemem resolve <id> (--choose <version-op-id> | --content <text>)
+  hivemem revise <id> <text>          creates a tentative version; review and confirm it
+  hivemem resolve <id> (--choose <version-op-id> | --content <text>)  then confirm
   hivemem pin|unpin <id>
   hivemem log [--limit 20]
   hivemem project                    identity of the current project
   hivemem stats
+  hivemem rebuild                    rebuild projections and search indexes from the ledger
   hivemem hook <event> --runtime claude-code|codex|codebuddy|cursor [--record]   (reads JSON on stdin)
   hivemem setup [--target claude-code,codex,codebuddy]   print hook config to paste into each tool
 
@@ -37,7 +38,7 @@ const BOOLEANS = new Set(['json', 'all', 'record', 'help', 'tentative']);
 function parseKey(v?: string): ClaimKey | undefined {
   if (!v) return undefined;
   const i = v.indexOf(':');
-  if (i <= 0) throw new Error('--key must look like subject:aspect, e.g. project:naming.api_field_case');
+  if (i <= 0 || i === v.length - 1) throw new Error('--key must look like subject:aspect, e.g. project:naming.api_field_case');
   return { subject: v.slice(0, i), aspect: v.slice(i + 1) };
 }
 
@@ -92,8 +93,10 @@ function main(argv: string[]): number {
         const kind = (str(a.flags, 'kind') ?? 'fact') as Kind;
         if (!KINDS.includes(kind)) throw new Error(`unknown kind ${kind}`);
         const as = str(a.flags, 'as') ?? (ctx.actor.runtime === 'cli' ? 'user' : 'agent');
+        if (as !== 'user' && as !== 'agent') throw new Error('--as must be user or agent');
         const method: Method = as === 'user' ? 'user-stated' : 'agent-stated';
         const level = ({ project: 'project', user: 'user', agent: 'agent', private: 'user-project' } as Record<string, ScopeLevel>)[str(a.flags, 'scope') ?? 'project'];
+        if (!level) throw new Error('--scope must be project, user, agent or private');
         const r = remember(ctx, {
           content,
           kind,
@@ -140,7 +143,9 @@ function main(argv: string[]): number {
             `id ${m.id}  scope ${m.scope}`,
             `status ${m.status}  kind ${m.kind}  importance ${m.importance}${m.pinned ? '  pinned' : ''}${m.key ? `  key ${m.key.subject}:${m.key.aspect}` : ''}`,
             `author ${m.author.principal} via ${m.author.agent}${m.corroborations.length ? `  corroborated by ${m.corroborations.map((c) => c.runtime).join(', ')}` : ''}`,
+            m.confirmed_by ? `confirmed by ${m.confirmed_by.principal} via ${m.confirmed_by.runtime}` : '',
             m.heads.length > 1 ? `CONFLICT - versions:\n${m.versions.filter((v) => m.heads.includes(v.op_id)).map((v) => `  ${v.op_id} (${v.actor.runtime}): ${v.content}`).join('\n')}` : '',
+            m.claim_conflicts.length ? `CLAIM CONFLICT - memories: ${m.claim_conflicts.join(', ')}; review with show, then confirm the correct memory` : '',
             'ops:',
             ...ops.map((o) => `  ${o.hlc.slice(0, 13)} ${o.type.padEnd(16)} ${o.actor.runtime.padEnd(12)} ${o.reason ?? ''}`),
             m.warnings.length ? `warnings: ${m.warnings.join('; ')}` : '',
@@ -186,6 +191,11 @@ function main(argv: string[]): number {
       case 'stats': {
         const s = ctx.store.stats();
         print(a, s, () => `${s.memories} memories, ${s.ops} ops  ${JSON.stringify(s.byStatus)}`);
+        return 0;
+      }
+      case 'rebuild': {
+        ctx.store.rebuild();
+        print(a, ctx.store.stats(), () => 'Rebuilt memory projections and search indexes from the ledger.');
         return 0;
       }
       default:

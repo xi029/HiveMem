@@ -78,9 +78,9 @@ Claude Code · Codex · CodeBuddy · Cursor · Gemini CLI · マルチエージ�
 **Node.js ≥ 22.18** が必要です。HiveMem にはランタイム依存がなく、Node 組み込みの SQLite を使うため、コンパイルは一切不要です。
 
 ```bash
-git clone <this-repo> hivemem && cd hivemem
+git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
 npm install          # 開発用ツールのみ（TypeScript）
-npm test             # 22 個のテスト：ledger の収束、競合、recall、hook
+npm run check        # 型検査・テスト・ビルド・オフラインインストール・CLI 検証
 ```
 
 > [!TIP]
@@ -182,9 +182,10 @@ stateDiagram-v2
     tentative --> quarantined: 同等の権限同士の競合
     quarantined --> committed: あなたが判断する
     committed --> conflicted: 同時編集
-    conflicted --> committed: 解決
+    conflicted --> tentative: マージ後に再確認
+    committed --> tentative: revise
     committed --> superseded: より新しい発言が優先
-    committed --> archived: 減衰
+    committed --> archived: archive
     committed --> revoked: 忘れる
 ```
 
@@ -197,7 +198,9 @@ stateDiagram-v2
 | エージェント vs あなた | エージェントの発言は **tentative** のままとなり、`contradicts` としてリンクされる |
 | エージェント vs エージェント | 両方とも **quarantined** になり、`hivemem inbox` で待機する |
 
-**Recall（想起）** は、関連度、減衰を考慮した重要度、新しさ、確信度（裏付けがあると上がる）、スコープの近さで候補をランク付けします。そのうえでトークン予算内に詰め込み、1 つのセッション内で同じメモリを繰り返すことはありません。中国語、日本語、韓国語のテキストは文字バイグラムとしてインデックスされるため、`字段` のような 2 文字のクエリも、文がどう分かち書きされていてもマッチします。
+**競合のレビュー。** `show <id>` で確認し、`confirm <id>` で正しい主張を選択します。同じキーの異なる主張は履歴に残して置き換えられます。兄弟バージョンは先に `resolve` でマージしてください。`revise` と `resolve` の新しい内容は再確認が必要です。競合中・隔離中・未信頼・同一キーの競合で保留中の内容は recall に入りません。異なるランタイムの同意は独立した証拠の証明ではありません。[アップグレードと復旧](../trust-and-recovery.md)も参照してください。
+
+**Recall（想起）** は、関連度、減衰を考慮した重要度、新しさ、確信度（裏付けがあると上がる）、スコープの近さで候補をランク付けします。そのうえでトークン予算内に詰め込み、同一セッションでは変更のないバージョンを重複注入しません。修正・確認後は再注入でき、セッション再開時にはレシートをリセットします。中国語、日本語、韓国語のテキストは文字バイグラムとしてインデックスされるため、`字段` のような 2 文字のクエリも、文がどう分かち書きされていてもマッチします。
 
 ## 🏗️ アーキテクチャ
 
@@ -243,6 +246,7 @@ HiveMem を特徴づける設計上の選択：
 | `hivemem revise <id> <text>` / `resolve <id>` | 編集する、または `--choose` か `--content` で競合を解決する |
 | `hivemem pin \| unpin <id>` | メモリを常にコンテキストに含める |
 | `hivemem log` · `stats` · `project` | op ログ、件数、現在のプロジェクト ID |
+| `hivemem rebuild` | 保持した ledger からメモリ・競合・検索インデックスを再構築 |
 | `hivemem hook <event> --runtime <tool>` | ツールの hook のエントリポイント（stdin から JSON を読む。ホストをブロックしない） |
 | `hivemem setup [--target …]` | Claude Code、Codex、CodeBuddy 向けの hook 設定を出力する |
 

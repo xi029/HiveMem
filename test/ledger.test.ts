@@ -157,7 +157,7 @@ describe('concurrent revisions (invariant I5)', () => {
 
     a.emit({ type: 'conflict.resolve', target: create.target, payload: { parents: view.heads, content: 'tests use vitest (node:test for scripts)' } });
     const resolved = a.view(create.target)!;
-    assert.equal(resolved.status, 'committed');
+    assert.equal(resolved.status, 'tentative', 'merged content needs a fresh approval');
     assert.equal(resolved.content, 'tests use vitest (node:test for scripts)');
     assert.equal(resolved.versions.length, 4, 'history keeps every version');
   });

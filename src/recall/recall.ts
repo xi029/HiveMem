@@ -52,7 +52,7 @@ export function effectiveImportance(m: MemoryState, now = Date.now()): number {
   return base * 0.5 ** (ageDays / HALF_LIFE[m.kind]);
 }
 
-/** Noisy-OR over independent sources: corroboration by other runtimes raises confidence (§9.4). */
+/** Ranking heuristic, not a calibrated probability: runtime diversity is not evidence independence. */
 export function confidence(m: MemoryState): number {
   const evidence = m.evidence.length ? 1 : 0.7;
   let miss = 1 - METHOD_WEIGHT[m.method] * evidence;
@@ -70,7 +70,8 @@ function age(hlc: string, now: number): string {
 export function renderLine(m: MemoryState, now = Date.now()): string {
   const flag = m.status === 'committed' ? '' : ` [${m.status}]`;
   const via = [m.author.runtime, ...m.corroborations.map((c) => c.runtime)].filter((v, i, a) => a.indexOf(v) === i).join('+');
-  return `- ${m.content.replace(/\s+/g, ' ')}${flag}  ⟨${m.id.slice(-6)} · ${m.method} via ${via} · ${age(m.revised_hlc, now)}⟩`;
+  const content = m.content.replace(/\s+/g, ' ').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `- ${content}${flag}  ⟨${m.id.slice(-6)} · ${m.method} via ${via} · ${age(m.revised_hlc, now)}⟩`;
 }
 
 const SECTIONS: { title: string; test: (m: MemoryState) => boolean }[] = [
@@ -88,9 +89,10 @@ const SECTIONS: { title: string; test: (m: MemoryState) => boolean }[] = [
 export function recall(ctx: Ctx, o: RecallOptions = {}): RecallResult {
   const now = Date.now();
   const budget = o.budget ?? 1200;
+  if (!Number.isInteger(budget) || budget < 0) throw new Error('budget must be a non-negative integer');
   const levelOf = new Map(ctx.chain.map((c) => [c.scope, c.level]));
   const visible = ctx.chain.map((c) => c.scope);
-  const statuses: Status[] = ['committed', 'tentative', 'conflicted'];
+  const statuses: Status[] = ['committed', 'tentative'];
   const filter = { scopes: visible, statuses, kinds: o.kinds };
 
   const rel = new Map<string, number>();
@@ -107,10 +109,11 @@ export function recall(ctx: Ctx, o: RecallOptions = {}): RecallResult {
   for (const m of ctx.store.list({ ...filter, limit: 30 }, 'importance')) if (!o.query || m.pinned) pool.set(m.id, m);
   if (!o.query) for (const m of ctx.store.list({ ...filter, limit: 20 }, 'recent')) pool.set(m.id, m);
 
-  const seen = o.session ? ctx.store.injected(o.session) : new Set<string>();
+  const seen = o.session ? ctx.store.injected(o.session) : new Map<string, string>();
   const scored: RecallItem[] = [];
   for (const m of pool.values()) {
-    if (seen.has(m.id)) continue;
+    if (seen.get(m.id) === `${m.head}:${m.status}`) continue;
+    if (m.untrusted || m.claim_conflicts.length) continue;
     // Tentative memories are visible to their own author only, unless explicitly requested.
     if (m.status === 'tentative' && !o.includeTentative && m.author.agent !== ctx.actor.agent) continue;
     const signals: Signals = {
@@ -128,24 +131,23 @@ export function recall(ctx: Ctx, o: RecallOptions = {}): RecallResult {
   }
   scored.sort((a, b) => b.score - a.score || (a.memory.id < b.memory.id ? -1 : 1));
 
-  const items: RecallItem[] = [];
-  let used = 0;
-  let truncated = 0;
-  for (const it of scored) {
-    if (used + it.tokens > budget) {
-      truncated++;
-      continue;
-    }
-    items.push(it);
-    used += it.tokens;
-  }
-  if (o.session && items.length) ctx.store.recordInjection(o.session, items.map((i) => ({ id: i.memory.id, tokens: i.tokens })));
-
   const pending = {
     tentative: ctx.store.list({ scopes: visible, statuses: ['tentative'], limit: 1000 }).length,
     review: ctx.store.list({ scopes: visible, statuses: ['quarantined', 'conflicted'], limit: 1000 }).length,
   };
-  return { items, text: renderBlock(items, pending), tokens: used, truncated, pending };
+  const items: RecallItem[] = [];
+  let truncated = 0;
+  for (const it of scored) {
+    if (estimateTokens(renderBlock([...items, it], pending)) > budget) {
+      truncated++;
+      continue;
+    }
+    items.push(it);
+  }
+  if (o.session && items.length) ctx.store.recordInjection(o.session, items.map((i) => ({ id: i.memory.id, version: `${i.memory.head}:${i.memory.status}`, tokens: i.tokens })));
+  let text = renderBlock(items, pending);
+  if (estimateTokens(text) > budget) text = '';
+  return { items, text, tokens: estimateTokens(text), truncated, pending };
 }
 
 export function renderBlock(items: RecallItem[], pending: { tentative: number; review: number }): string {

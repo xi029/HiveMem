@@ -78,9 +78,9 @@ Claude Code · Codex · CodeBuddy · Cursor · Gemini CLI · 多智能体框架
 需要 **Node.js ≥ 22.18**。HiveMem 没有运行时依赖，使用 Node 内置的 SQLite，无需编译任何东西。
 
 ```bash
-git clone <this-repo> hivemem && cd hivemem
+git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
 npm install          # 仅开发工具（TypeScript）
-npm test             # 22 个测试：账本收敛、冲突、召回、hook
+npm run check        # 类型、测试、构建、离线安装与 CLI 验证
 ```
 
 > [!TIP]
@@ -182,9 +182,10 @@ stateDiagram-v2
     tentative --> quarantined: 同等权威冲突
     quarantined --> committed: 你裁决
     committed --> conflicted: 并发修改
-    conflicted --> committed: 解决
+    conflicted --> tentative: 解决后重新确认
+    committed --> tentative: revise
     committed --> superseded: 更新的声明胜出
-    committed --> archived: 衰减
+    committed --> archived: archive 归档
     committed --> revoked: 遗忘
 ```
 
@@ -197,7 +198,9 @@ stateDiagram-v2
 | agent vs 你 | agent 的保持 **tentative**，并以 `contradicts` 关联 |
 | agent vs agent | 两条都 **quarantined**，在 `hivemem inbox` 等你处理 |
 
-**召回**按相关性、带衰减的重要度、新近度、置信度（被印证会提高）和作用域远近为候选打分，再按 token 预算打包，同一会话内不会重复注入同一条记忆。中文、日文和韩文按字符二元组（bigram）建索引，因此像 `字段` 这样的两字查询，无论句子如何分词都能命中。
+**冲突审核。** 用 `show <id>` 检查，再用 `confirm <id>` 确认正确答案并取代同键的其他答案。兄弟版本先用 `resolve` 合并；`revise` 和 `resolve` 的新版本都需要重新确认。冲突、隔离、不可信和被同键冲突阻塞的内容不会进入召回。跨工具认同只是启发式，不能证明证据相互独立。升级及恢复说明见 [trust-and-recovery.md](../trust-and-recovery.md)。
+
+**召回**按相关性、带衰减的重要度、新近度、置信度（被印证会提高）和作用域远近为候选打分，再按 token 预算打包，同一会话内不重复注入未变化的版本；修订或确认后可再次注入，会话重启会重置回执。中文、日文和韩文按字符二元组（bigram）建索引，因此像 `字段` 这样的两字查询，无论句子如何分词都能命中。
 
 ## 🏗️ 架构
 
@@ -243,6 +246,7 @@ HiveMem 与众不同的设计选择：
 | `hivemem revise <id> <text>` / `resolve <id>` | 修改；或用 `--choose`、`--content` 解决冲突 |
 | `hivemem pin \| unpin <id>` | 让某条记忆始终保留在上下文中 |
 | `hivemem log` · `stats` · `project` | op 日志、计数、当前项目身份 |
+| `hivemem rebuild` | 从保留的账本重建记忆投影、声明冲突和搜索索引 |
 | `hivemem hook <event> --runtime <tool>` | 工具 hook 的入口（从 stdin 读取 JSON；绝不阻塞宿主工具） |
 | `hivemem setup [--target …]` | 打印 Claude Code、Codex 和 CodeBuddy 的 hook 配置 |
 

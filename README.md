@@ -78,9 +78,9 @@ These are the most-discussed memory complaints in agent-tool issue trackers, and
 Requires **Node.js ≥ 22.18**. HiveMem has no runtime dependencies and uses Node's built-in SQLite, so there is nothing to compile.
 
 ```bash
-git clone <this-repo> hivemem && cd hivemem
+git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
 npm install          # dev tooling only (TypeScript)
-npm test             # 22 tests: ledger convergence, conflicts, recall, hooks
+npm run check        # types, tests, build, offline package installation and CLI checks
 ```
 
 > [!TIP]
@@ -182,9 +182,10 @@ stateDiagram-v2
     tentative --> quarantined: same-authority conflict
     quarantined --> committed: you decide
     committed --> conflicted: concurrent edits
-    conflicted --> committed: resolve
+    conflicted --> tentative: resolve; review the merged version
+    committed --> tentative: revise
     committed --> superseded: newer statement wins
-    committed --> archived: decays
+    committed --> archived: archive
     committed --> revoked: forget
 ```
 
@@ -197,7 +198,9 @@ stateDiagram-v2
 | Agent vs you | Agent's stays **tentative** and is linked as `contradicts` |
 | Agent vs agent | Both are **quarantined** and wait in `hivemem inbox` |
 
-**Recall** ranks candidates by relevance, importance with decay, recency, confidence (corroboration raises it) and scope proximity. It then packs them into a token budget and never repeats a memory within one session. Chinese, Japanese and Korean text is indexed as character bigrams, so a two-character query like `字段` matches no matter how the sentence is segmented.
+**Review conflicts.** Run `hivemem show <id>`, then `hivemem confirm <id>` to select the correct claim and supersede its conflicting alternatives. For sibling versions, use `resolve` first. Both `revise` and `resolve` create tentative versions that need fresh confirmation. Conflicted, quarantined, untrusted and claim-blocked content is excluded from recall. Two runtime names agreeing is a heuristic, not proof of independent evidence. See [trust, upgrades and recovery](docs/trust-and-recovery.md).
+
+**Recall** ranks candidates by relevance, importance with decay, recency, confidence (corroboration raises it) and scope proximity. The estimated token budget includes the complete rendered context. Unchanged versions are deduplicated within a session; revisions and confirmations can be injected again, and session restarts reset receipts. Chinese, Japanese and Korean text is indexed as character bigrams, so a two-character query like `字段` matches no matter how the sentence is segmented.
 
 ## 🏗️ Architecture
 
@@ -243,6 +246,7 @@ Deep dive: [ARCHITECTURE.md](docs/ARCHITECTURE.md) covers the data model, ledger
 | `hivemem revise <id> <text>` / `resolve <id>` | Edit, or settle a conflict with `--choose` or `--content` |
 | `hivemem pin \| unpin <id>` | Always keep a memory in context |
 | `hivemem log` · `stats` · `project` | Op log, counts, current project identity |
+| `hivemem rebuild` | Rebuild memory projections, claim conflicts and search indexes from the unchanged ledger |
 | `hivemem hook <event> --runtime <tool>` | Entry point for tool hooks (reads JSON on stdin; never blocks the host) |
 | `hivemem setup [--target …]` | Print hook config for Claude Code, Codex and CodeBuddy |
 

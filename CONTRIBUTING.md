@@ -10,6 +10,7 @@ Requires **Node.js ≥ 22.18**, which runs the TypeScript sources directly. Ther
 npm install
 npm test               # node:test, runs test/**/*.test.ts
 npm run typecheck      # tsc --noEmit
+npm run check          # types, tests, build, tarball, offline installation and compiled CLI
 node src/cli/main.ts   # the CLI from source; set HIVEMEM_HOME=<tmp dir> to keep your real data clean
 ```
 
@@ -31,7 +32,7 @@ node src/cli/main.ts   # the CLI from source; set HIVEMEM_HOME=<tmp dir> to keep
 These keep HiveMem trustworthy. A PR that breaks one needs a design discussion first.
 
 1. **The ledger is the source of truth.** State changes only by appending ops. Anything else, such as tables, indexes and generated files, must be rebuildable from the ops.
-2. **The fold is deterministic.** Do not use `Date.now()`, randomness or iteration-order dependence inside `src/ledger/fold.ts`. The convergence property test in `test/ledger.test.ts` must keep passing.
+2. **The fold and claim projection are deterministic.** Do not use `Date.now()`, randomness or iteration-order dependence inside `src/ledger/fold.ts` or `src/ledger/claims.ts`. Recompute claim conflicts from base folds; never use a previously derived quarantine as the source of truth. The convergence tests must keep passing.
 3. **No LLM calls and no network in the core.** Optional features that need them belong behind an explicit opt-in.
 4. **Zero runtime dependencies** for now. Use what Node ships (`node:sqlite`, `node:crypto`, `node:test`).
 5. **Hooks never block the host tool.** On any error a hook prints nothing, logs to `~/.hivemem/hook-errors.log` and exits 0.
@@ -47,7 +48,8 @@ These keep HiveMem trustworthy. A PR that breaks one needs a design discussion f
 ## Pull requests
 
 - Keep each PR focused, and add or adjust tests for any behaviour change.
-- `npm test` and `npm run typecheck` must pass. CI runs them on Linux, macOS and Windows with Node 22.18, 22 and 24.
+- `npm run check` must pass. CI runs types, tests and offline package installation on Linux, macOS and Windows with Node 22.18, 22 and 24. `prepack` builds the distributable; the package check never publishes it.
+- Test changes to admission with actual concurrent processes and changes to stored projections against the legacy schema. See `test/storage.test.ts` and [trust and recovery](docs/trust-and-recovery.md).
 - If you change the data model, ops or invariants, update [ARCHITECTURE.md](docs/ARCHITECTURE.md) in the same PR.
 - Commit messages: imperative mood, with a short summary line.
 

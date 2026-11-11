@@ -27,11 +27,5 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: npm run build
-      - name: Smoke-test the built CLI
-        shell: bash
-        env:
-          HIVEMEM_HOME: ${{ runner.temp }}/hivemem
-        run: |
-          node dist/cli/main.js remember "CI smoke test" --as user
-          node dist/cli/main.js brief | grep -q "CI smoke test"
+      - name: Build, pack, install offline and exercise the shipped CLI
+        run: npm run test:package

@@ -52,13 +52,16 @@ export interface MetaPayload {
   pinned?: boolean;
   tags_add?: string[];
   tags_remove?: string[];
-  /** Independent observation of the same claim by another runtime/session. */
-  corroborate?: { runtime: string; session?: string };
+  /** Another runtime's observation; runtime diversity does not prove evidence independence. */
+  corroborate?: { runtime: string; session?: string; version?: string };
 }
 
 export interface TransitionPayload {
   to: Status;
   by?: string;
+  /** Bind an approval to the exact content version reviewed. */
+  version?: string;
+  confirmed?: boolean;
 }
 
 export interface ResolvePayload {
@@ -112,6 +115,9 @@ export interface MemoryState {
   scope: string;
   kind: Kind;
   status: Status;
+  /** Status before cross-record claim-key conflict policy. */
+  base_status: Status;
+  claim_conflicts: string[];
   content: string;
   key?: ClaimKey;
   tags: string[];
@@ -121,7 +127,8 @@ export interface MemoryState {
   author: Actor;
   evidence: Evidence[];
   untrusted: boolean;
-  corroborations: { runtime: string; session?: string }[];
+  confirmed_by?: Actor;
+  corroborations: { runtime: string; session?: string; version?: string }[];
   created_hlc: string;
   revised_hlc: string;
   head: string;

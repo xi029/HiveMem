@@ -19,6 +19,9 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --test --test-reporter=spec \"test/**/*.test.ts\"",
+    "test:package": "node scripts/test-package.mjs",
+    "prepack": "npm run build",
+    "check": "npm run typecheck && npm test && npm run test:package",
     "dev": "node src/cli/main.ts"
   },
   "keywords": [

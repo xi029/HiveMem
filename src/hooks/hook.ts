@@ -88,6 +88,8 @@ export function runHook(runtime: string, eventArg: string | undefined, stdin: st
     try {
       switch (p.event) {
         case 'SessionStart': {
+          // Restart/resume/compaction may have discarded previously injected context.
+          if (session) ctx.store.clearInjections(session);
           const r = recall(ctx, { budget: 800, session });
           return output(runtime, p.event, p.rawEvent, r.text);
         }

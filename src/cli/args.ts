@@ -19,13 +19,17 @@ export function parseArgs(argv: string[], booleans: ReadonlySet<string> = new Se
     }
     const eq = a.indexOf('=');
     if (eq > 0) {
-      flags[a.slice(2, eq)] = a.slice(eq + 1);
+      const name = a.slice(2, eq);
+      if (booleans.has(name)) throw new Error(`--${name} does not take a value`);
+      if (!a.slice(eq + 1)) throw new Error(`missing value for --${name}`);
+      flags[name] = a.slice(eq + 1);
       continue;
     }
     const name = a.slice(2);
     const next = argv[i + 1];
-    if (booleans.has(name) || next === undefined || next.startsWith('--')) flags[name] = true;
+    if (booleans.has(name)) flags[name] = true;
     else {
+      if (next === undefined || next.startsWith('--')) throw new Error(`missing value for --${name}`);
       flags[name] = next;
       i++;
     }

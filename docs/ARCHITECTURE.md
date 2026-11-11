@@ -4,6 +4,19 @@
 > 多平台协作层（§14）建立在同一本账上，只给出接口与对象定义。产品定位见 [DESIGN.md](DESIGN.md)，调研见 [research-landscape.md](research-landscape.md)。
 > 项目名：HiveMem（CLI `hivemem`，守护进程 `hivememd`，仓库目录 `.hivemem/`）。
 
+> **实现边界（2026-11-11）**：下文同时包含实现和规划。当前交付本地 SQLite、CLI、规则写入/召回及 hook 适配；daemon、远端同步、认证 ACL、Git 模式、Dreamer、专家路由仍是设计。实际操作和升级行为以 [trust-and-recovery.md](trust-and-recovery.md) 为准。
+
+### 当前账本与信任规则
+
+- 写入入口在 `BEGIN IMMEDIATE` 内读取候选、判断去重/冲突并提交操作，锁内观察最新 HLC；不依赖尚未实现的 daemon 来保证本机写入串行。
+- `foldMemory` 生成单条记忆的 `base_status`。存储层再按 `(scope, key.subject, key.aspect)` 对所有同组基础状态运行纯函数 `projectClaims`，生成有效 `status` 与 `claim_conflicts`。同级矛盾隔离，低权威矛盾保持待确认。修改键时重算旧组和新组；撤销和乱序导入也重算，避免隔离状态成为不可恢复的投影残留。
+- `confirm` 写入携带 `version`、`confirmed` 的提交操作，保留 `confirmed_by`，并在同一事务中取代同键的其他有效答案。未解决兄弟版本须先 `resolve`。这些字段是本机调用者声明，不构成身份认证。
+- `revise`、`resolve` 产生的新内容需要重新确认；旧版本的印证、证据和确认不自动继承。新格式印证和确认均绑定内容版本。`revoked`、`archived`、`superseded` 不因剩余兄弟版本而重新进入召回。
+- 跨 runtime 印证是启发式规则，不代表证据独立性；`untrusted` 内容不参与自动印证或覆盖可信用户声明。召回排除冲突、隔离、不可信和同键阻塞内容，`--tentative` 也不绕过此限制。
+- 精确去重按 scope、kind、claim key 和规范化内容索引查询，不依赖 FTS top-k。保留大小写、标点和内部空白，仅统一 NFC、换行并去除首尾空白。
+- 投影版本 `2` 自动增加 `memories.content_norm` 索引与 `injections.version` 字段，并从原始 ops 重建记忆、边及 FTS。注入回执记录 `head:status`，会话重启清空该会话回执；预算计入完整渲染文本。
+- `hivemem rebuild` 已实现。标签和边当前按 HLC 重放最后操作，并非下文规划的 OR-Set；自动衰减归档、级联撤回及撤回后自动恢复仍未实现。
+
 ---
 
 ## 0. 设计不变量（任何实现都不能违背）

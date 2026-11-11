@@ -78,9 +78,9 @@ agent 도구의 이슈 트래커에서 가장 많이 논의되는 메모리 관�
 **Node.js ≥ 22.18**이 필요합니다. HiveMem은 런타임 의존성이 없고 Node 내장 SQLite를 사용하므로 컴파일할 것이 없습니다.
 
 ```bash
-git clone <this-repo> hivemem && cd hivemem
+git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
 npm install          # 개발 도구만 설치 (TypeScript)
-npm test             # 테스트 22개: ledger 수렴, 충돌, recall, hook
+npm run check        # 타입·테스트·빌드·오프라인 설치·CLI 검증
 ```
 
 > [!TIP]
@@ -182,9 +182,10 @@ stateDiagram-v2
     tentative --> quarantined: 같은 권한끼리 충돌
     quarantined --> committed: 여러분이 결정
     committed --> conflicted: 동시 편집
-    conflicted --> committed: 해결
+    conflicted --> tentative: 병합 후 다시 확인
+    committed --> tentative: revise
     committed --> superseded: 더 새로운 진술이 이김
-    committed --> archived: 시간이 지나 감쇠
+    committed --> archived: archive
     committed --> revoked: 잊기
 ```
 
@@ -197,7 +198,9 @@ stateDiagram-v2
 | agent vs 여러분 | agent의 진술은 **tentative**로 남고 `contradicts`로 연결됨 |
 | agent vs agent | 둘 다 **quarantined** 처리되어 `hivemem inbox`에서 대기 |
 
-**Recall**은 관련성, 감쇠를 반영한 중요도, 최신성, 신뢰도(뒷받침될수록 올라감), 스코프 근접도로 후보의 순위를 매깁니다. 그런 다음 토큰 예산 안에 담아 넣으며, 한 세션 안에서 같은 메모리를 반복하지 않습니다. 중국어, 일본어, 한국어 텍스트는 문자 bigram으로 색인하므로, `字段` 같은 두 글자 쿼리도 문장이 어떻게 분절되든 일치합니다.
+**충돌 검토.** `show <id>`로 확인한 뒤 `confirm <id>`로 올바른 주장을 선택하면 같은 키의 다른 주장은 이력을 유지한 채 대체됩니다. 형제 버전은 먼저 `resolve`로 병합하세요. `revise`와 `resolve`의 새 내용은 다시 확인해야 합니다. 충돌·격리·비신뢰 상태나 같은 키의 충돌로 보류된 내용은 recall에서 제외됩니다. 서로 다른 런타임의 동의는 독립적인 증거를 증명하지 않습니다. [업그레이드와 복구 안내](../trust-and-recovery.md)를 참고하세요.
+
+**Recall**은 관련성, 감쇠를 반영한 중요도, 최신성, 신뢰도(뒷받침될수록 올라감), 스코프 근접도로 후보의 순위를 매깁니다. 그런 다음 토큰 예산 안에 담아 넣으며, 한 세션에서는 변경되지 않은 버전을 반복 주입하지 않습니다. 수정·확인 후에는 다시 주입할 수 있으며 세션이 다시 시작되면 영수증을 초기화합니다. 중국어, 일본어, 한국어 텍스트는 문자 bigram으로 색인하므로, `字段` 같은 두 글자 쿼리도 문장이 어떻게 분절되든 일치합니다.
 
 ## 🏗️ 아키텍처
 
@@ -243,6 +246,7 @@ HiveMem을 차별화하는 설계 선택:
 | `hivemem revise <id> <text>` / `resolve <id>` | 수정하거나, `--choose` 또는 `--content`로 충돌 해결 |
 | `hivemem pin \| unpin <id>` | 메모리를 항상 컨텍스트에 유지 |
 | `hivemem log` · `stats` · `project` | op 로그, 통계, 현재 프로젝트 식별 정보 |
+| `hivemem rebuild` | 보존된 ledger에서 메모리·주장 충돌·검색 색인 재구축 |
 | `hivemem hook <event> --runtime <tool>` | 도구 hook의 진입점 (stdin으로 JSON을 읽음, 호스트를 절대 막지 않음) |
 | `hivemem setup [--target …]` | Claude Code, Codex, CodeBuddy용 hook 설정 출력 |
 

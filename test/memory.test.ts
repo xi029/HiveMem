@@ -135,6 +135,8 @@ describe('hooks', () => {
     assert.match(out.hookSpecificOutput.additionalContext, /UTC/);
     const start = JSON.parse(runHook('codebuddy', 'SessionStart', JSON.stringify({ session_id: 'cb', cwd })));
     assert.match(start.hookSpecificOutput.additionalContext, /UTC/);
+    const resume = JSON.parse(runHook('codebuddy', 'SessionStart', JSON.stringify({ session_id: 'cb', cwd, source: 'compact' })));
+    assert.match(resume.hookSpecificOutput.additionalContext, /UTC/, 'a restarted context needs its memories again');
     const cursor = JSON.parse(runHook('cursor', 'sessionStart', JSON.stringify({ conversation_id: 'cu', workspace_roots: [cwd] })));
     assert.match(cursor.additional_context, /UTC/);
     process.env.HIVEMEM_HOME = home;
