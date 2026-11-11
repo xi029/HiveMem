@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import type { ClaimKey, Kind, MemoryState, Method, Status } from '../ledger/types.ts';
 import { KINDS } from '../ledger/types.ts';
 import { type Ctx, hivememHome, openContext, type ScopeLevel } from '../identity/context.ts';
 import { remember, resolveConflict, revise, setMeta, transition } from '../ingest/write.ts';
 import { recall, renderLine } from '../recall/recall.ts';
 import { runHook } from '../hooks/hook.ts';
-import { setupText, TARGETS } from '../hooks/setup.ts';
+import { setupText, targetName, TARGETS } from '../hooks/setup.ts';
+import { doctor, setup } from '../hooks/install.ts';
 import { type Args, parseArgs, str } from './args.ts';
 
 const HELP = `hivemem - shared memory for all your agents
@@ -28,12 +30,14 @@ Usage:
   hivemem stats
   hivemem rebuild                    rebuild projections and search indexes from the ledger
   hivemem hook <event> --runtime claude-code|codex|codebuddy|cursor [--record]   (reads JSON on stdin)
-  hivemem setup [--target claude-code,codex,codebuddy]   print hook config to paste into each tool
+  hivemem setup [--target claude-code,codex,codebuddy]   preview hook config
+  hivemem setup --apply|--eject --target <tool> [--config <file>] [--dry-run] [--json]
+  hivemem doctor [--target <tool>] [--config <file>] [--json]   inspect the installation
 
 Options: --runtime <name> (default: cli)  --cwd <dir>  --json
 Data: ${hivememHome()}`;
 
-const BOOLEANS = new Set(['json', 'all', 'record', 'help', 'tentative']);
+const BOOLEANS = new Set(['json', 'all', 'record', 'help', 'tentative', 'apply', 'eject', 'dry-run']);
 
 function parseKey(v?: string): ClaimKey | undefined {
   if (!v) return undefined;
@@ -66,9 +70,38 @@ function main(argv: string[]): number {
     return 0;
   }
 
-  if (cmd === 'setup') {
-    const targets = (str(a.flags, 'target') ?? Object.keys(TARGETS).join(',')).split(',').map((t) => t.trim());
-    console.log(setupText(targets, str(a.flags, 'bin') ?? 'hivemem'));
+  if (cmd === 'setup' || cmd === 'doctor') {
+    const allowed = new Set(cmd === 'setup' ? ['target', 'config', 'apply', 'eject', 'dry-run', 'bin', 'json'] : ['target', 'config', 'json']);
+    for (const flag of Object.keys(a.flags)) if (!allowed.has(flag)) throw new Error(`unknown ${cmd} option --${flag}`);
+    if (a.positional.length !== 1) throw new Error(`${cmd} does not take positional arguments`);
+    const selected = str(a.flags, 'target');
+    const targets = (selected ?? Object.keys(TARGETS).join(',')).split(',').map((t) => targetName(t.trim()));
+    const config = str(a.flags, 'config');
+    if (config && (!selected || targets.length !== 1)) throw new Error('--config requires exactly one --target');
+    if (cmd === 'doctor') {
+      const reports = targets.map((target) => doctor(target, config));
+      print(a, reports, () => reports.map((report) => [
+        `${report.target}: ${report.configPath}`,
+        ...report.checks.map((check) => `  [${check.status}] ${check.name}: ${check.message}`),
+      ].join('\n')).join('\n\n'));
+      return reports.every((report) => report.ok) ? 0 : 1;
+    }
+    const launcher = { node: process.execPath, cli: fileURLToPath(import.meta.url) };
+    if (a.flags.apply && a.flags.eject) throw new Error('choose either --apply or --eject');
+    if (a.flags.apply || a.flags.eject) {
+      if (!selected || targets.length !== 1) throw new Error('--apply and --eject require exactly one explicit --target');
+      if (a.flags.bin) throw new Error('--bin is only available for manual configuration previews');
+      const result = setup({ target: targets[0]!, config, action: a.flags.apply ? 'apply' : 'eject', dryRun: !!a.flags['dry-run'], launcher });
+      print(a, result, () => [
+        `${result.dryRun ? 'Dry run' : result.changed ? 'Updated' : 'No changes'}: ${result.configPath}`,
+        ...result.backups.map((path) => `Backup: ${path}`),
+        ...(result.config ? [JSON.stringify(result.config, null, 2)] : []),
+        result.note,
+      ].join('\n'));
+    } else {
+      if (a.flags['dry-run'] || config || a.flags.json) throw new Error('--dry-run, --config and --json require --apply or --eject');
+      console.log(setupText(targets, launcher, str(a.flags, 'bin')));
+    }
     return 0;
   }
 

@@ -107,33 +107,21 @@ hivemem recall "how should I name fields in the new endpoint?"
 
 ### 3. Connect your tools
 
-`hivemem setup` prints the hook configuration for each tool. Merge it into the file shown. One `hivemem hook` command serves every tool.
+`setup --apply` installs the two active hooks while preserving existing settings. It backs up changed files and can be repeated without adding duplicates. Start with a dry run:
 
-<details>
-<summary><b>Claude Code</b>: <code>~/.claude/settings.json</code></summary>
-
-```jsonc
-{
-  "hooks": {
-    "SessionStart":     [{ "hooks": [{ "type": "command", "command": "hivemem hook SessionStart --runtime claude-code" }] }],
-    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "hivemem hook UserPromptSubmit --runtime claude-code" }] }]
-    // plus SubagentStart, Stop, PreCompact, SessionEnd: see `hivemem setup --target claude-code`
-  }
-}
+```bash
+hivemem setup --apply --target claude-code --dry-run
+hivemem setup --apply --target claude-code
+hivemem doctor --target claude-code
 ```
-</details>
 
-<details>
-<summary><b>CodeBuddy Code</b>: <code>~/.codebuddy/settings.json</code></summary>
+| Target | Default file | After installation |
+|---|---|---|
+| `claude-code` | `~/.claude/settings.json` | Review `/hooks` and restart |
+| `codex` | `$CODEX_HOME/hooks.json` or `~/.codex/hooks.json` | Trust the commands in `/hooks` and restart |
+| `codebuddy` | `~/.codebuddy/settings.json` | Review `/hooks` and restart; Windows needs Git Bash |
 
-CodeBuddy Code uses the same hook schema as Claude Code. Run `hivemem setup --target codebuddy` and merge the output.
-</details>
-
-<details>
-<summary><b>Codex CLI</b>: <code>~/.codex/hooks.json</code></summary>
-
-Codex hooks follow a near-identical schema (the field-by-field mapping is still being verified against recorded payloads). Run `hivemem setup --target codex`, then trust the hooks with `/hooks`.
-</details>
+Replace `claude-code` with the tool you use. Hooks record absolute executable paths, so keep the checkout in place. `doctor` checks the installation files; verify actual execution in the host. Use `setup --eject --target claude-code` to remove managed hooks. For custom paths, manual-hook migration and recovery, see the [setup guide](docs/setup.md).
 
 <details>
 <summary><b>Cursor</b>: <code>.cursor/hooks.json</code></summary>
@@ -246,7 +234,9 @@ Deep dive: [ARCHITECTURE.md](docs/ARCHITECTURE.md) covers the data model, ledger
 | `hivemem log` · `stats` · `project` | Op log, counts, current project identity |
 | `hivemem rebuild` | Rebuild memory projections, claim conflicts and search indexes from the unchanged ledger |
 | `hivemem hook <event> --runtime <tool>` | Entry point for tool hooks (reads JSON on stdin; never blocks the host) |
-| `hivemem setup [--target …]` | Print hook config for Claude Code, Codex and CodeBuddy |
+| `hivemem setup [--target …]` | Preview hook configuration |
+| `hivemem setup --apply / --eject --target <tool>` | Install or remove managed hooks; supports `--dry-run`, `--config` and `--json` |
+| `hivemem doctor [--target <tool>]` | Inspect installation files without running hooks (`--json` available) |
 
 IDs can be shortened to their last 6 characters. Data lives in `~/.hivemem/` (override with `HIVEMEM_HOME`).
 
@@ -261,7 +251,8 @@ IDs can be shortened to their last 6 characters. Data lives in `~/.hivemem/` (ov
   - [ ] MCP server (stdio + Streamable HTTP)
   - [ ] Git mode: `.hivemem/memories/*.md`, where pull-request review is memory review
   - [ ] Native memory bridge: `MEMORY.md`, Codex and CodeBuddy memories; managed blocks in `CLAUDE.md` / `AGENTS.md` / `CODEBUDDY.md`
-  - [ ] `setup --apply / --eject`, pre-compaction rescue, web console (timeline · inbox · injection receipts)
+  - [x] `setup --apply / --eject`, backups, dry runs and `doctor`
+  - [ ] Pre-compaction rescue, web console (timeline · inbox · injection receipts)
   - [ ] npm release
 - **v0.2 Multi-agent collaboration**: handoff batons, file/task claims, change feed, subagent memory, memory experts with rule-based routing, embeddings
 - **v0.3 Teams and office agents**: `hivemem serve` (Postgres, OAuth, remote MCP), multi-device sync, ChatGPT / Claude.ai / Copilot Studio, Feishu and Slack bots

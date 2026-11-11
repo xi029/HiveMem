@@ -23,7 +23,7 @@ node src/cli/main.ts   # the CLI from source; set HIVEMEM_HOME=<tmp dir> to keep
 | `src/identity/` | Project identity (git remote → project id) and the runtime context |
 | `src/ingest/` | Write path: redaction, dedup, corroboration, claim-key conflicts |
 | `src/recall/` | Scoring, scope chain, token-budget packing |
-| `src/hooks/` | One hook entry point for every tool, plus `setup` snippets |
+| `src/hooks/` | Hook adapters, managed setup/eject and read-only installation diagnosis |
 | `src/cli/` | Argument parsing and commands |
 | `docs/` | [DESIGN.md](docs/DESIGN.md) (why), [ARCHITECTURE.md](docs/ARCHITECTURE.md) (how), [research-landscape.md](docs/research-landscape.md) |
 

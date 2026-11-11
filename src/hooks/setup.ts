@@ -1,45 +1,78 @@
-/**
- * Hook configuration snippets per host. v0.1 only prints them; writing host config files
- * (with backup and `--eject`) comes with `hivemem setup --apply`.
- */
-const EVENTS = ['SessionStart', 'UserPromptSubmit', 'SubagentStart', 'Stop', 'PreCompact', 'SessionEnd'] as const;
+import { homedir } from 'node:os';
+import { isAbsolute, join, resolve } from 'node:path';
 
-function claudeStyle(runtime: string, bin: string): object {
-  return {
-    hooks: Object.fromEntries(
-      EVENTS.map((e) => [e, [{ hooks: [{ type: 'command', command: `${bin} hook ${e} --runtime ${runtime}`, timeout: 10 }] }]]),
-    ),
-  };
+/** Only events with implemented, session-level behaviour are installed. */
+export const EVENTS = ['SessionStart', 'UserPromptSubmit'] as const;
+export interface HookCommand {
+  type: 'command';
+  command: string;
+  args?: string[];
+  commandWindows?: string;
+  timeout: number;
+}
+export type HookConfig = { hooks: Record<string, { hooks: HookCommand[] }[]> };
+export interface Launcher { node: string; cli: string }
+
+export const TARGETS = {
+  'claude-code': { directory: '.claude', filename: 'settings.json', note: 'Review /hooks and restart the session.' },
+  codebuddy: { directory: '.codebuddy', filename: 'settings.json', note: 'Review /hooks and restart the session. Windows requires Git Bash.' },
+  codex: { directory: '.codex', filename: 'hooks.json', note: 'Review and trust the commands in /hooks, then restart the session.' },
+} as const;
+export type Target = keyof typeof TARGETS;
+
+export function targetName(value: string): Target {
+  if (!Object.hasOwn(TARGETS, value)) throw new Error(`unknown target "${value}" (known: ${Object.keys(TARGETS).join(', ')})`);
+  return value as Target;
 }
 
-export const TARGETS: Record<string, { file: string; note: string; snippet: (bin: string) => object }> = {
-  'claude-code': {
-    file: '~/.claude/settings.json (or .claude/settings.json in a project)',
-    note: 'Merge the "hooks" object into the file.',
-    snippet: (bin) => claudeStyle('claude-code', bin),
-  },
-  codebuddy: {
-    file: '~/.codebuddy/settings.json (or .codebuddy/settings.json in a project)',
-    note: 'CodeBuddy Code uses the Claude Code hook schema; merge the "hooks" object.',
-    snippet: (bin) => claudeStyle('codebuddy', bin),
-  },
-  codex: {
-    file: '~/.codex/hooks.json',
-    note: 'Codex hooks follow a near-identical schema (unverified field-by-field; confirm with a --record run). Trust them via /hooks.',
-    snippet: (bin) => claudeStyle('codex', bin),
-  },
-};
+export function configPath(target: Target, override?: string): string {
+  if (override) return resolve(override);
+  const directory = target === 'codex' && process.env.CODEX_HOME
+    ? resolve(process.env.CODEX_HOME) : join(homedir(), TARGETS[target].directory);
+  return join(directory, TARGETS[target].filename);
+}
 
-export function setupText(targets: string[], bin = 'hivemem'): string {
-  const out: string[] = [];
-  for (const t of targets) {
-    const spec = TARGETS[t];
-    if (!spec) {
-      out.push(`unknown target "${t}" (known: ${Object.keys(TARGETS).join(', ')})`);
-      continue;
-    }
-    out.push(`# ${t} -> ${spec.file}`, `# ${spec.note}`, JSON.stringify(spec.snippet(bin), null, 2), '');
+export function validateLauncher(launcher: Launcher): void {
+  if (!launcher || typeof launcher.node !== 'string' || typeof launcher.cli !== 'string'
+    || !isAbsolute(launcher.node) || !isAbsolute(launcher.cli)
+    || /[\0\r\n]/.test(launcher.node + launcher.cli)) {
+    throw new Error('hook launcher must contain absolute Node and CLI paths');
   }
-  out.push('# Add --record to any command to save raw payloads under ~/.hivemem/recordings/ for debugging.');
-  return out.join('\n');
+}
+
+function shellQuote(value: string): string {
+  return `'${value.replaceAll("'", "'\"'\"'")}'`;
+}
+
+/** Codex uses COMSPEC /C on Windows; CodeBuddy uses Git Bash. Claude supports direct exec. */
+export function hookConfig(target: Target, launcher: Launcher, platform = process.platform): HookConfig {
+  validateLauncher(launcher);
+  return { hooks: Object.fromEntries(EVENTS.map((event) => {
+    const args = [launcher.cli, 'hook', event, '--runtime', target];
+    let command: HookCommand;
+    if (target === 'claude-code') {
+      command = { type: 'command', command: launcher.node, args, timeout: 10 };
+    } else {
+      const words = [launcher.node, ...args];
+      command = { type: 'command', command: words.map((word) => shellQuote(platform === 'win32' ? word.replaceAll('\\', '/') : word)).join(' '), timeout: 10 };
+      if (target === 'codex' && platform === 'win32') {
+        // Refuse paths that cmd.exe expands even inside quotes. Never interpolate them unescaped.
+        if (words.some((word) => /[%!"\r\n]/.test(word))) {
+          throw new Error('Codex on Windows needs installation paths without %, ! or double quotes; move the checkout or Node installation');
+        }
+        command.commandWindows = words.map((word) => `"${word}"`).join(' ');
+      }
+    }
+    return [event, [{ hooks: [command] }]];
+  })) };
+}
+
+export function setupText(targets: string[], launcher: Launcher, bin?: string): string {
+  return targets.map((name) => {
+    const target = targetName(name);
+    const config = bin ? { hooks: Object.fromEntries(EVENTS.map((event) => [event, [{ hooks: [
+      { type: 'command', command: `${bin} hook ${event} --runtime ${target}`, timeout: 10 },
+    ] }]])) } : hookConfig(target, launcher);
+    return [`# ${target} -> ${configPath(target)}`, `# ${TARGETS[target].note}`, JSON.stringify(config, null, 2)].join('\n');
+  }).join('\n\n');
 }

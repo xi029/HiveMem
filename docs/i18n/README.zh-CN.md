@@ -107,33 +107,21 @@ hivemem recall "how should I name fields in the new endpoint?"
 
 ### 3. 接入你的工具
 
-`hivemem setup` 会打印每个工具的 hook 配置，把它合并进对应文件即可。同一条 `hivemem hook` 命令服务所有工具。
+`setup --apply` 安装两类已实现的 Hook，保留现有设置并自动备份。重复运行不会重复添加。先预览改动：
 
-<details>
-<summary><b>Claude Code</b>：<code>~/.claude/settings.json</code></summary>
-
-```jsonc
-{
-  "hooks": {
-    "SessionStart":     [{ "hooks": [{ "type": "command", "command": "hivemem hook SessionStart --runtime claude-code" }] }],
-    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "hivemem hook UserPromptSubmit --runtime claude-code" }] }]
-    // 另有 SubagentStart、Stop、PreCompact、SessionEnd：见 `hivemem setup --target claude-code`
-  }
-}
+```bash
+hivemem setup --apply --target claude-code --dry-run
+hivemem setup --apply --target claude-code
+hivemem doctor --target claude-code
 ```
-</details>
 
-<details>
-<summary><b>CodeBuddy Code</b>：<code>~/.codebuddy/settings.json</code></summary>
+| 目标 | 默认文件 | 安装后 |
+|---|---|---|
+| `claude-code` | `~/.claude/settings.json` | 在 `/hooks` 中检查，然后重启会话 |
+| `codex` | `$CODEX_HOME/hooks.json` 或 `~/.codex/hooks.json` | 在 `/hooks` 中信任命令，然后重启 |
+| `codebuddy` | `~/.codebuddy/settings.json` | 检查 `/hooks` 后重启；Windows 需要 Git Bash |
 
-CodeBuddy Code 与 Claude Code 使用相同的 hook 格式。运行 `hivemem setup --target codebuddy` 并合并输出。
-</details>
-
-<details>
-<summary><b>Codex CLI</b>：<code>~/.codex/hooks.json</code></summary>
-
-Codex 的 hook 格式几乎相同（逐字段对应关系仍在用录制的真实负载核实）。运行 `hivemem setup --target codex`，然后在 `/hooks` 中信任这些 hook。
-</details>
+把 `claude-code` 换成你使用的工具。Hook 保存可执行文件的绝对路径，因此请保留当前项目目录。`doctor` 检查安装文件，实际执行仍需在宿主中验证。用 `setup --eject --target claude-code` 移除托管 Hook。自定义路径、手动配置迁移和恢复方法见[接入指南](../setup.md)。
 
 <details>
 <summary><b>Cursor</b>：<code>.cursor/hooks.json</code></summary>
@@ -246,7 +234,9 @@ HiveMem 与众不同的设计选择：
 | `hivemem log` · `stats` · `project` | op 日志、计数、当前项目身份 |
 | `hivemem rebuild` | 从保留的账本重建记忆投影、声明冲突和搜索索引 |
 | `hivemem hook <event> --runtime <tool>` | 工具 hook 的入口（从 stdin 读取 JSON；绝不阻塞宿主工具） |
-| `hivemem setup [--target …]` | 打印 Claude Code、Codex 和 CodeBuddy 的 hook 配置 |
+| `hivemem setup [--target …]` | 预览 Hook 配置 |
+| `hivemem setup --apply / --eject --target <tool>` | 安装或卸载托管 Hook；支持 `--dry-run`、`--config`、`--json` |
+| `hivemem doctor [--target <tool>]` | 检查安装文件，不执行 Hook；支持 `--json` |
 
 ID 可以只写最后 6 个字符。数据保存在 `~/.hivemem/`（可用 `HIVEMEM_HOME` 覆盖）。
 
@@ -261,7 +251,8 @@ ID 可以只写最后 6 个字符。数据保存在 `~/.hivemem/`（可用 `HIVE
   - [ ] MCP 服务器（stdio + Streamable HTTP）
   - [ ] git 模式：`.hivemem/memories/*.md`，PR 评审即记忆评审
   - [ ] 原生记忆桥接：`MEMORY.md`、Codex 与 CodeBuddy 的记忆；`CLAUDE.md` / `AGENTS.md` / `CODEBUDDY.md` 中的托管区块
-  - [ ] `setup --apply / --eject`、压缩前抢救、Web 控制台（时间线 · 收件箱 · 注入回执）
+  - [x] `setup --apply / --eject`、备份、改动预览和 `doctor`
+  - [ ] 压缩前抢救、Web 控制台（时间线 · 收件箱 · 注入回执）
   - [ ] 发布到 npm
 - **v0.2 多智能体协作**：交接棒、文件/任务认领、变更订阅、子 agent 记忆、基于规则路由的记忆专家、向量嵌入
 - **v0.3 团队与办公 agent**：`hivemem serve`（Postgres、OAuth、远程 MCP）、多设备同步、ChatGPT / Claude.ai / Copilot Studio、飞书与 Slack 机器人

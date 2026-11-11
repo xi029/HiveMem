@@ -107,33 +107,21 @@ hivemem recall "how should I name fields in the new endpoint?"
 
 ### 3. ツールを接続する
 
-`hivemem setup` は各ツール向けの hook 設定を出力します。表示されたファイルにマージしてください。1 つの `hivemem hook` コマンドがすべてのツールに対応します。
+`setup --apply` は既存の設定を保持し、バックアップを作成して、実装済みの 2 種類の hook を追加します。繰り返しても重複しません。まず変更をプレビューします：
 
-<details>
-<summary><b>Claude Code</b>: <code>~/.claude/settings.json</code></summary>
-
-```jsonc
-{
-  "hooks": {
-    "SessionStart":     [{ "hooks": [{ "type": "command", "command": "hivemem hook SessionStart --runtime claude-code" }] }],
-    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "hivemem hook UserPromptSubmit --runtime claude-code" }] }]
-    // ほかに SubagentStart、Stop、PreCompact、SessionEnd もある：`hivemem setup --target claude-code` を参照
-  }
-}
+```bash
+hivemem setup --apply --target claude-code --dry-run
+hivemem setup --apply --target claude-code
+hivemem doctor --target claude-code
 ```
-</details>
 
-<details>
-<summary><b>CodeBuddy Code</b>: <code>~/.codebuddy/settings.json</code></summary>
+| 対象 | 既定のファイル | インストール後 |
+|---|---|---|
+| `claude-code` | `~/.claude/settings.json` | `/hooks` で確認してセッションを再起動 |
+| `codex` | `$CODEX_HOME/hooks.json` または `~/.codex/hooks.json` | `/hooks` でコマンドを信頼し、再起動 |
+| `codebuddy` | `~/.codebuddy/settings.json` | `/hooks` で確認して再起動。Windows は Git Bash が必要 |
 
-CodeBuddy Code は Claude Code と同じ hook スキーマを使います。`hivemem setup --target codebuddy` を実行し、出力をマージしてください。
-</details>
-
-<details>
-<summary><b>Codex CLI</b>: <code>~/.codex/hooks.json</code></summary>
-
-Codex の hook はほぼ同一のスキーマに従います（フィールドごとの対応は、記録したペイロードとの照合をまだ進めているところです）。`hivemem setup --target codex` を実行し、`/hooks` で hook を信頼してください。
-</details>
+`claude-code` を使用するツールに置き換えてください。実行ファイルの絶対パスを保存するため、チェックアウトを移動しないでください。`doctor` はインストールファイルを検査します。実際の動作はホスト側で確認してください。`setup --eject --target claude-code` で管理対象の hook を削除できます。カスタムパス、手動設定からの移行、復旧は[接続ガイド](../setup.md)を参照してください。
 
 <details>
 <summary><b>Cursor</b>: <code>.cursor/hooks.json</code></summary>
@@ -246,7 +234,9 @@ HiveMem を特徴づける設計上の選択：
 | `hivemem log` · `stats` · `project` | op ログ、件数、現在のプロジェクト ID |
 | `hivemem rebuild` | 保持した ledger からメモリ・競合・検索インデックスを再構築 |
 | `hivemem hook <event> --runtime <tool>` | ツールの hook のエントリポイント（stdin から JSON を読む。ホストをブロックしない） |
-| `hivemem setup [--target …]` | Claude Code、Codex、CodeBuddy 向けの hook 設定を出力する |
+| `hivemem setup [--target …]` | hook 設定のプレビュー |
+| `hivemem setup --apply / --eject --target <tool>` | 管理対象の hook を追加・削除。`--dry-run`、`--config`、`--json` に対応 |
+| `hivemem doctor [--target <tool>]` | hook を実行せずにインストールを検査。`--json` に対応 |
 
 ID は末尾 6 文字に短縮できます。データは `~/.hivemem/` に保存されます（`HIVEMEM_HOME` で変更可能）。
 
@@ -261,7 +251,8 @@ ID は末尾 6 文字に短縮できます。データは `~/.hivemem/` に保�
   - [ ] MCP サーバー（stdio + Streamable HTTP）
   - [ ] Git モード：`.hivemem/memories/*.md`。プルリクエストのレビューがそのままメモリのレビューになる
   - [ ] ネイティブメモリブリッジ：`MEMORY.md`、Codex と CodeBuddy のメモリ、`CLAUDE.md` / `AGENTS.md` / `CODEBUDDY.md` 内の管理ブロック
-  - [ ] `setup --apply / --eject`、compaction 前の退避、Web コンソール（タイムライン · inbox · 注入レシート）
+  - [x] `setup --apply / --eject`、バックアップ、プレビュー、`doctor`
+  - [ ] compaction 前の退避、Web コンソール（タイムライン · inbox · 注入レシート）
   - [ ] npm リリース
 - **v0.2 マルチエージェント協調**：引き継ぎバトン、ファイル/タスクのクレーム、変更フィード、サブエージェントのメモリ、ルールベースのルーティングを備えたメモリエキスパート、埋め込み
 - **v0.3 チームとオフィスエージェント**：`hivemem serve`（Postgres、OAuth、リモート MCP）、複数デバイス間の同期、ChatGPT / Claude.ai / Copilot Studio、Feishu と Slack のボット

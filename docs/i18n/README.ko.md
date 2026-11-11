@@ -107,33 +107,21 @@ hivemem recall "how should I name fields in the new endpoint?"
 
 ### 3. 도구 연결하기
 
-`hivemem setup`은 도구별 hook 설정을 출력합니다. 표시된 파일에 병합하세요. `hivemem hook` 명령 하나가 모든 도구를 담당합니다.
+`setup --apply`는 기존 설정을 보존하고 백업을 만든 뒤, 구현된 두 종류의 hook을 설치합니다. 반복 실행해도 중복되지 않습니다. 먼저 변경 내용을 확인하세요:
 
-<details>
-<summary><b>Claude Code</b>: <code>~/.claude/settings.json</code></summary>
-
-```jsonc
-{
-  "hooks": {
-    "SessionStart":     [{ "hooks": [{ "type": "command", "command": "hivemem hook SessionStart --runtime claude-code" }] }],
-    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "hivemem hook UserPromptSubmit --runtime claude-code" }] }]
-    // 그 밖에 SubagentStart, Stop, PreCompact, SessionEnd도 있음: `hivemem setup --target claude-code` 참고
-  }
-}
+```bash
+hivemem setup --apply --target claude-code --dry-run
+hivemem setup --apply --target claude-code
+hivemem doctor --target claude-code
 ```
-</details>
 
-<details>
-<summary><b>CodeBuddy Code</b>: <code>~/.codebuddy/settings.json</code></summary>
+| 대상 | 기본 파일 | 설치 후 |
+|---|---|---|
+| `claude-code` | `~/.claude/settings.json` | `/hooks`에서 확인하고 세션 다시 시작 |
+| `codex` | `$CODEX_HOME/hooks.json` 또는 `~/.codex/hooks.json` | `/hooks`에서 명령을 신뢰한 뒤 다시 시작 |
+| `codebuddy` | `~/.codebuddy/settings.json` | `/hooks` 확인 후 다시 시작. Windows는 Git Bash 필요 |
 
-CodeBuddy Code는 Claude Code와 같은 hook 스키마를 사용합니다. `hivemem setup --target codebuddy`를 실행하고 출력 내용을 병합하세요.
-</details>
-
-<details>
-<summary><b>Codex CLI</b>: <code>~/.codex/hooks.json</code></summary>
-
-Codex hook은 거의 동일한 스키마를 따릅니다(필드별 대응 관계는 아직 녹화된 페이로드로 검증하는 중입니다). `hivemem setup --target codex`를 실행한 뒤 `/hooks`로 hook을 신뢰(trust)하도록 설정하세요.
-</details>
+`claude-code`를 사용하는 도구로 바꾸세요. 실행 파일의 절대 경로를 저장하므로 체크아웃 위치를 유지하세요. `doctor`는 설치 파일을 검사하며, 실제 실행은 호스트에서 확인해야 합니다. `setup --eject --target claude-code`로 관리되는 hook을 제거할 수 있습니다. 사용자 지정 경로, 수동 설정 이전 및 복구 방법은 [연결 가이드](../setup.md)를 참고하세요.
 
 <details>
 <summary><b>Cursor</b>: <code>.cursor/hooks.json</code></summary>
@@ -246,7 +234,9 @@ HiveMem을 차별화하는 설계 선택:
 | `hivemem log` · `stats` · `project` | op 로그, 통계, 현재 프로젝트 식별 정보 |
 | `hivemem rebuild` | 보존된 ledger에서 메모리·주장 충돌·검색 색인 재구축 |
 | `hivemem hook <event> --runtime <tool>` | 도구 hook의 진입점 (stdin으로 JSON을 읽음, 호스트를 절대 막지 않음) |
-| `hivemem setup [--target …]` | Claude Code, Codex, CodeBuddy용 hook 설정 출력 |
+| `hivemem setup [--target …]` | hook 설정 미리 보기 |
+| `hivemem setup --apply / --eject --target <tool>` | 관리되는 hook 설치·제거. `--dry-run`, `--config`, `--json` 지원 |
+| `hivemem doctor [--target <tool>]` | hook을 실행하지 않고 설치 파일 검사. `--json` 지원 |
 
 ID는 마지막 6자로 줄여 쓸 수 있습니다. 데이터는 `~/.hivemem/`에 저장됩니다(`HIVEMEM_HOME`으로 변경 가능).
 
@@ -261,7 +251,8 @@ ID는 마지막 6자로 줄여 쓸 수 있습니다. 데이터는 `~/.hivemem/`�
   - [ ] MCP 서버 (stdio + Streamable HTTP)
   - [ ] Git 모드: `.hivemem/memories/*.md`, pull request 리뷰가 곧 메모리 리뷰
   - [ ] 네이티브 메모리 브리지: `MEMORY.md`, Codex와 CodeBuddy 메모리, `CLAUDE.md` / `AGENTS.md` / `CODEBUDDY.md` 안의 관리 블록
-  - [ ] `setup --apply / --eject`, compaction 직전 구출(rescue), 웹 콘솔 (타임라인 · inbox · 주입 영수증)
+  - [x] `setup --apply / --eject`, 백업, 미리 보기 및 `doctor`
+  - [ ] compaction 직전 구출(rescue), 웹 콘솔 (타임라인 · inbox · 주입 영수증)
   - [ ] npm 배포
 - **v0.2 멀티 agent 협업**: 인수인계 바통, 파일/작업 선점(claim), 변경 피드, subagent 메모리, 규칙 기반 라우팅을 갖춘 메모리 전문가, 임베딩
 - **v0.3 팀과 오피스 agent**: `hivemem serve` (Postgres, OAuth, 원격 MCP), 멀티 디바이스 동기화, ChatGPT / Claude.ai / Copilot Studio, Feishu 및 Slack 봇
