@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Pack and install outside the checkout so missing/stale dist files cannot hide behind source files.
 const root = fileURLToPath(new URL('..', import.meta.url));
-const temporary = mkdtempSync(join(tmpdir(), 'hivemem-package-'));
+// Node resolves module paths and cwd through symlinks (macOS /var -> /private/var).
+const temporary = realpathSync(mkdtempSync(join(tmpdir(), 'hivemem-package-')));
 const npm = process.env.npm_execpath;
 if (!npm) throw new Error('Run this check with npm run test:package');
 const runNpm = (args, cwd) => execFileSync(process.execPath, [npm, ...args], { cwd, encoding: 'utf8', timeout: 120_000 });
