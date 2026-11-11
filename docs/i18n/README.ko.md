@@ -39,7 +39,7 @@ Claude Code · Codex · CodeBuddy · Cursor · Gemini CLI · 멀티 agent 프레
 - **코어는 절대 LLM을 호출하지 않습니다.** 로컬 우선으로 동작하고, SQLite 파일 하나만 쓰며, 토큰 비용을 한 푼도 늘리지 않습니다.
 
 > [!NOTE]
-> **상태: v0.1 개발 중.** ledger 코어, 로컬 저장소, recall, CLI, hook shim은 동작하며 테스트를 거쳤습니다(로컬은 Windows, CI는 macOS와 Linux). MCP 서버, git 모드, 네이티브 메모리 브리지는 다음 순서로 개발 중입니다([로드맵](#%EF%B8%8F-로드맵)). 진행 상황을 따라가려면 저장소에 Star를 눌러 주세요. 인터페이스는 아직 바뀔 수 있습니다.
+> **상태: v0.1 개발 중.** ledger 코어, 로컬 저장소, recall, CLI, hook과 로컬 stdio MCP는 동작하며 테스트를 거쳤습니다(로컬은 Windows, CI는 macOS와 Linux). 원격 HTTP MCP, git 모드, 네이티브 메모리 브리지는 계획 단계입니다([로드맵](#%EF%B8%8F-로드맵)). 진행 상황을 따라가려면 저장소에 Star를 눌러 주세요. 인터페이스는 아직 바뀔 수 있습니다.
 
 ## 🎬 직접 보기
 
@@ -130,9 +130,9 @@ hivemem doctor --target claude-code
 </details>
 
 <details>
-<summary><b>그 밖의 도구</b>: MCP <i>(v0.1에서 제공 예정)</i></summary>
+<summary><b>다른 로컬 도구와 프레임워크</b>: stdio MCP</summary>
 
-MCP 서버(stdio 및 Streamable HTTP)로 Gemini CLI, Copilot, Windsurf, Zed, ChatGPT, Claude.ai와 agent 프레임워크를 지원할 예정입니다.
+호환되는 MCP 클라이언트에서 `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name`을 실행하세요. 검색, 기록, 상세 조회, inbox, 프로젝트 정보의 다섯 도구를 제공하며 `--read-only`로 쓰기를 비활성화할 수 있습니다. Agent 관찰에는 기존 신뢰 규칙이 적용됩니다. 절대 경로와 연결 설정은 [MCP 가이드](../mcp.md)를 참고하세요. 원격 Streamable HTTP는 계획 단계입니다.
 </details>
 
 **직접 알려 주세요.** 연결된 어떤 도구에서든 프롬프트를 `기억해: …`(또는 `기억해 줘: …`, `remember that …`, `记住：…`, `覚えて：…`)로 시작하면 *여러분의* 진술로 저장됩니다.
@@ -237,6 +237,7 @@ HiveMem을 차별화하는 설계 선택:
 | `hivemem setup [--target …]` | hook 설정 미리 보기 |
 | `hivemem setup --apply / --eject --target <tool>` | 관리되는 hook 설치·제거. `--dry-run`, `--config`, `--json` 지원 |
 | `hivemem doctor [--target <tool>]` | hook을 실행하지 않고 설치 파일 검사. `--json` 지원 |
+| `hivemem mcp --cwd <project> [--runtime <tool>] [--read-only]` | stdio로 로컬 MCP 클라이언트에 공유 메모리 제공 |
 
 ID는 마지막 6자로 줄여 쓸 수 있습니다. 데이터는 `~/.hivemem/`에 저장됩니다(`HIVEMEM_HOME`으로 변경 가능).
 
@@ -248,7 +249,8 @@ ID는 마지막 6자로 줄여 쓸 수 있습니다. 데이터는 `~/.hivemem/`�
   - [x] 쓰기 경로: 마스킹, 중복 제거, 뒷받침(corroboration), claim key 충돌
   - [x] Recall: 점수 계산, 스코프 체인, 토큰 예산, 세션별 중복 제거
   - [x] CLI와 hook shim (Claude Code · Codex · CodeBuddy · Cursor)
-  - [ ] MCP 서버 (stdio + Streamable HTTP)
+  - [x] 로컬 stdio MCP, 범위가 제한된 도구, 공식 클라이언트 상호 운용 테스트
+  - [ ] 원격 Streamable HTTP MCP
   - [ ] Git 모드: `.hivemem/memories/*.md`, pull request 리뷰가 곧 메모리 리뷰
   - [ ] 네이티브 메모리 브리지: `MEMORY.md`, Codex와 CodeBuddy 메모리, `CLAUDE.md` / `AGENTS.md` / `CODEBUDDY.md` 안의 관리 블록
   - [x] `setup --apply / --eject`, 백업, 미리 보기 및 `doctor`

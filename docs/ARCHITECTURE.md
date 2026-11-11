@@ -4,7 +4,7 @@
 > 多平台协作层（§14）建立在同一本账上，只给出接口与对象定义。产品定位见 [DESIGN.md](DESIGN.md)，调研见 [research-landscape.md](research-landscape.md)。
 > 项目名：HiveMem（CLI `hivemem`，守护进程 `hivememd`，仓库目录 `.hivemem/`）。
 
-> **实现边界（2026-11-11）**：下文同时包含实现和规划。当前交付本地 SQLite、CLI、规则写入/召回及 hook 适配；daemon、远端同步、认证 ACL、Git 模式、Dreamer、专家路由仍是设计。实际操作和升级行为以 [trust-and-recovery.md](trust-and-recovery.md) 为准。
+> **实现边界（2026-11-11）**：下文同时包含实现和规划。当前交付本地 SQLite、CLI、规则写入/召回、hook 适配及本地 stdio MCP；远程 HTTP MCP、daemon、远端同步、认证 ACL、Git 模式、Dreamer、专家路由仍是设计。实际操作和升级行为以 [trust-and-recovery.md](trust-and-recovery.md) 为准。
 
 ### 当前账本与信任规则
 
@@ -16,6 +16,7 @@
 - 精确去重按 scope、kind、claim key 和规范化内容索引查询，不依赖 FTS top-k。保留大小写、标点和内部空白，仅统一 NFC、换行并去除首尾空白。
 - 投影版本 `2` 自动增加 `memories.content_norm` 索引与 `injections.version` 字段，并从原始 ops 重建记忆、边及 FTS。注入回执记录 `head:status`，会话重启清空该会话回执；预算计入完整渲染文本。
 - `hivemem rebuild` 已实现。标签和边当前按 HLC 重放最后操作，并非下文规划的 OR-Set；自动衰减归档、级联撤回及撤回后自动恢复仍未实现。
+- stdio MCP 通过启动参数固定项目与 runtime，复用现有写入与召回规则；`clientInfo` 不决定权威。模型只可写入 agent-stated 观察，确认与解决冲突保留在 CLI。详情读取也检查可见 scope；显式 recall 不消耗 hook 注入回执。支持 2026-07-28 逐请求元数据及旧版初始化协议，运行时零依赖，官方客户端仅用于开发互操作测试。见 [mcp.md](mcp.md)。
 
 ---
 

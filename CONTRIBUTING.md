@@ -24,6 +24,7 @@ node src/cli/main.ts   # the CLI from source; set HIVEMEM_HOME=<tmp dir> to keep
 | `src/ingest/` | Write path: redaction, dedup, corroboration, claim-key conflicts |
 | `src/recall/` | Scoring, scope chain, token-budget packing |
 | `src/hooks/` | Hook adapters, managed setup/eject and read-only installation diagnosis |
+| `src/mcp/` | Stdio MCP transport, version negotiation, validated tools and project boundaries |
 | `src/cli/` | Argument parsing and commands |
 | `docs/` | [DESIGN.md](docs/DESIGN.md) (why), [ARCHITECTURE.md](docs/ARCHITECTURE.md) (how), [research-landscape.md](docs/research-landscape.md) |
 
@@ -34,7 +35,7 @@ These keep HiveMem trustworthy. A PR that breaks one needs a design discussion f
 1. **The ledger is the source of truth.** State changes only by appending ops. Anything else, such as tables, indexes and generated files, must be rebuildable from the ops.
 2. **The fold and claim projection are deterministic.** Do not use `Date.now()`, randomness or iteration-order dependence inside `src/ledger/fold.ts` or `src/ledger/claims.ts`. Recompute claim conflicts from base folds; never use a previously derived quarantine as the source of truth. The convergence tests must keep passing.
 3. **No LLM calls and no network in the core.** Optional features that need them belong behind an explicit opt-in.
-4. **Zero runtime dependencies** for now. Use what Node ships (`node:sqlite`, `node:crypto`, `node:test`).
+4. **Zero runtime dependencies** for now. Use what Node ships (`node:sqlite`, `node:crypto`, `node:test`). The official MCP client is a development dependency for interoperability tests only.
 5. **Hooks never block the host tool.** On any error a hook prints nothing, logs to `~/.hivemem/hook-errors.log` and exits 0.
 6. **Write ≠ belief.** Agent-written memories start `tentative`. Don't add a path that lets an agent commit its own claim without corroboration or user confirmation.
 
@@ -50,6 +51,7 @@ These keep HiveMem trustworthy. A PR that breaks one needs a design discussion f
 - Keep each PR focused, and add or adjust tests for any behaviour change.
 - `npm run check` must pass. CI runs types, tests and offline package installation on Linux, macOS and Windows with Node 22.18, 22 and 24. `prepack` builds the distributable; the package check never publishes it.
 - Test changes to admission with actual concurrent processes and changes to stored projections against the legacy schema. See `test/storage.test.ts` and [trust and recovery](docs/trust-and-recovery.md).
+- Keep MCP stdout protocol-only. Test both official-client negotiation modes, reject invalid tool arguments before opening the store, and never derive write authority from MCP client metadata. See `test/mcp.test.ts`.
 - If you change the data model, ops or invariants, update [ARCHITECTURE.md](docs/ARCHITECTURE.md) in the same PR.
 - Commit messages: imperative mood, with a short summary line.
 

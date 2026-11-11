@@ -33,11 +33,12 @@ Usage:
   hivemem setup [--target claude-code,codex,codebuddy]   preview hook config
   hivemem setup --apply|--eject --target <tool> [--config <file>] [--dry-run] [--json]
   hivemem doctor [--target <tool>] [--config <file>] [--json]   inspect the installation
+  hivemem mcp --cwd <project-directory> [--runtime <tool>] [--read-only]   serve MCP over stdio
 
 Options: --runtime <name> (default: cli)  --cwd <dir>  --json
 Data: ${hivememHome()}`;
 
-const BOOLEANS = new Set(['json', 'all', 'record', 'help', 'tentative', 'apply', 'eject', 'dry-run']);
+const BOOLEANS = new Set(['json', 'all', 'record', 'help', 'tentative', 'apply', 'eject', 'dry-run', 'read-only']);
 
 function parseKey(v?: string): ClaimKey | undefined {
   if (!v) return undefined;
@@ -62,7 +63,7 @@ function short(m: MemoryState): string {
   return `${m.id.slice(-6)}  ${m.status.padEnd(11)} ${m.kind.padEnd(9)} ${m.content.replace(/\s+/g, ' ').slice(0, 90)}`;
 }
 
-function main(argv: string[]): number {
+async function main(argv: string[]): Promise<number> {
   const a = parseArgs(argv, BOOLEANS);
   const cmd = a.positional[0];
   if (!cmd || a.flags.help || cmd === 'help') {
@@ -102,6 +103,17 @@ function main(argv: string[]): number {
       if (a.flags['dry-run'] || config || a.flags.json) throw new Error('--dry-run, --config and --json require --apply or --eject');
       console.log(setupText(targets, launcher, str(a.flags, 'bin')));
     }
+    return 0;
+  }
+
+  if (cmd === 'mcp') {
+    const allowed = new Set(['cwd', 'runtime', 'read-only']);
+    for (const flag of Object.keys(a.flags)) if (!allowed.has(flag)) throw new Error(`unknown mcp option --${flag}`);
+    if (a.positional.length !== 1) throw new Error('mcp does not take positional arguments');
+    const cwd = str(a.flags, 'cwd');
+    if (!cwd) throw new Error('mcp requires --cwd <project-directory>');
+    const { serveMcp } = await import('../mcp/server.ts');
+    await serveMcp({ cwd, runtime: str(a.flags, 'runtime'), readOnly: !!a.flags['read-only'] });
     return 0;
   }
 
@@ -241,7 +253,7 @@ function main(argv: string[]): number {
 }
 
 try {
-  process.exitCode = main(process.argv.slice(2));
+  process.exitCode = await main(process.argv.slice(2));
 } catch (err) {
   console.error(`hivemem: ${(err as Error).message}`);
   process.exitCode = 1;

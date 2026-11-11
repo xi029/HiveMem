@@ -16,6 +16,9 @@
 
 ### Added
 
+- Local `hivemem mcp --cwd <project>` stdio server with recall, remember, show, inbox and project tools, plus `--read-only`.
+- Modern MCP 2026-07-28 discovery and metadata, legacy initialization compatibility, bounded framing and official-client interoperability tests.
+- Fixed project/runtime identities for MCP, scoped direct-ID reads and agent-only write authority. See the [MCP guide](docs/mcp.md).
 - Managed `setup --apply` / `--eject` for Claude Code, Codex and CodeBuddy, with previews, backups, ownership records and idempotent updates.
 - Read-only `doctor` checks and a [setup and recovery guide](docs/setup.md).
 - Host-specific launchers with absolute paths, plus shell, configuration-preservation and packaged-hook tests.

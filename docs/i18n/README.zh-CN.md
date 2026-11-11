@@ -39,7 +39,7 @@ Claude Code · Codex · CodeBuddy · Cursor · Gemini CLI · 多智能体框架
 - **核心不调用任何 LLM。** 本地优先，只用一个 SQLite 文件，不增加 token 开销。
 
 > [!NOTE]
-> **状态：v0.1 开发中。** 账本核心、本地存储、召回、CLI 和 hook 接入已可用并有测试覆盖（本地在 Windows 上测试，CI 覆盖 macOS 和 Linux）。MCP 服务器、git 模式和原生记忆桥接是接下来的工作（见[路线图](#%EF%B8%8F-路线图)）。欢迎 Star 关注进展；接口仍可能变化。
+> **状态：v0.1 开发中。** 账本核心、本地存储、召回、CLI、Hook 和本地 stdio MCP 已可用并有测试覆盖（本地在 Windows 上测试，CI 覆盖 macOS 和 Linux）。远程 HTTP MCP、git 模式和原生记忆桥接仍在规划中（见[路线图](#%EF%B8%8F-路线图)）。欢迎 Star 关注进展；接口仍可能变化。
 
 ## 🎬 演示
 
@@ -130,9 +130,9 @@ hivemem doctor --target claude-code
 </details>
 
 <details>
-<summary><b>其他工具</b>：MCP <i>(v0.1 推出)</i></summary>
+<summary><b>其他本地工具与框架</b>：stdio MCP</summary>
 
-MCP 服务器（stdio 与 Streamable HTTP）将覆盖 Gemini CLI、Copilot、Windsurf、Zed、ChatGPT、Claude.ai 以及各类 agent 框架。
+在兼容的 MCP 客户端中启动 `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name`。提供检索、写入、详情、收件箱和项目信息五个工具；加上 `--read-only` 可禁用写入。Agent 观察沿用现有信任规则。绝对路径和客户端配置见 [MCP 接入指南](../mcp.md)。远程 Streamable HTTP 仍在规划中。
 </details>
 
 **直接告诉它。** 在任何已接入的工具里，以 `记住：…`（或 `记一下：…`、`remember that …`、`覚えて：…`、`기억해: …`）开头提问，这条内容就会作为*你本人*的声明保存。
@@ -237,6 +237,7 @@ HiveMem 与众不同的设计选择：
 | `hivemem setup [--target …]` | 预览 Hook 配置 |
 | `hivemem setup --apply / --eject --target <tool>` | 安装或卸载托管 Hook；支持 `--dry-run`、`--config`、`--json` |
 | `hivemem doctor [--target <tool>]` | 检查安装文件，不执行 Hook；支持 `--json` |
+| `hivemem mcp --cwd <project> [--runtime <tool>] [--read-only]` | 通过 stdio 向本地 MCP 客户端提供共享记忆 |
 
 ID 可以只写最后 6 个字符。数据保存在 `~/.hivemem/`（可用 `HIVEMEM_HOME` 覆盖）。
 
@@ -248,7 +249,8 @@ ID 可以只写最后 6 个字符。数据保存在 `~/.hivemem/`（可用 `HIVE
   - [x] 写入路径：脱敏、去重、印证、声明键冲突
   - [x] 召回：打分、作用域链、token 预算、会话内去重
   - [x] CLI 与 hook 接入（Claude Code · Codex · CodeBuddy · Cursor）
-  - [ ] MCP 服务器（stdio + Streamable HTTP）
+  - [x] 本地 stdio MCP、限定作用域的工具、官方客户端互操作测试
+  - [ ] 远程 Streamable HTTP MCP
   - [ ] git 模式：`.hivemem/memories/*.md`，PR 评审即记忆评审
   - [ ] 原生记忆桥接：`MEMORY.md`、Codex 与 CodeBuddy 的记忆；`CLAUDE.md` / `AGENTS.md` / `CODEBUDDY.md` 中的托管区块
   - [x] `setup --apply / --eject`、备份、改动预览和 `doctor`

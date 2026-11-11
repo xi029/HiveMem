@@ -39,7 +39,7 @@ You switch between agent tools all day: Claude Code for one task, Codex when you
 - **The core never calls an LLM.** It is local-first, uses one SQLite file, and adds nothing to your token bill.
 
 > [!NOTE]
-> **Status: v0.1 in development.** The ledger core, local store, recall, CLI and hook shims work and are tested (locally on Windows; CI covers macOS and Linux). The MCP server, git mode and the native-memory bridge are being built next ([roadmap](#%EF%B8%8F-roadmap)). Star the repo to follow along; interfaces may still change.
+> **Status: v0.1 in development.** The ledger core, local store, recall, CLI, hooks and local stdio MCP server work and are tested (locally on Windows; CI covers macOS and Linux). Remote HTTP MCP, git mode and the native-memory bridge remain planned ([roadmap](#%EF%B8%8F-roadmap)). Star the repo to follow along; interfaces may still change.
 
 ## 🎬 See it
 
@@ -130,9 +130,9 @@ Use `--runtime cursor`. HiveMem replies in Cursor's `additional_context` format.
 </details>
 
 <details>
-<summary><b>Anything else</b>: MCP <i>(coming in v0.1)</i></summary>
+<summary><b>Other local tools and frameworks</b>: stdio MCP</summary>
 
-An MCP server (stdio and Streamable HTTP) will cover Gemini CLI, Copilot, Windsurf, Zed, ChatGPT, Claude.ai and agent frameworks.
+Launch `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name` from a compatible MCP client. It exposes recall, remember, show, inbox and project tools; add `--read-only` to disable writes. Agent observations follow the existing trust rules. See the [MCP configuration guide](docs/mcp.md) for absolute executable paths and client setup. Remote Streamable HTTP remains planned.
 </details>
 
 **Tell it things directly.** In any connected tool, start a prompt with `remember that …` (or `记住：…`, `覚えて：…`, `기억해: …`) and it's stored as *your* statement.
@@ -237,6 +237,7 @@ Deep dive: [ARCHITECTURE.md](docs/ARCHITECTURE.md) covers the data model, ledger
 | `hivemem setup [--target …]` | Preview hook configuration |
 | `hivemem setup --apply / --eject --target <tool>` | Install or remove managed hooks; supports `--dry-run`, `--config` and `--json` |
 | `hivemem doctor [--target <tool>]` | Inspect installation files without running hooks (`--json` available) |
+| `hivemem mcp --cwd <project> [--runtime <tool>] [--read-only]` | Serve shared memory to local MCP clients over stdio |
 
 IDs can be shortened to their last 6 characters. Data lives in `~/.hivemem/` (override with `HIVEMEM_HOME`).
 
@@ -248,7 +249,8 @@ IDs can be shortened to their last 6 characters. Data lives in `~/.hivemem/` (ov
   - [x] Write path: redaction, dedup, corroboration, claim-key conflicts
   - [x] Recall: scoring, scope chain, token budget, per-session dedupe
   - [x] CLI and hook shims (Claude Code · Codex · CodeBuddy · Cursor)
-  - [ ] MCP server (stdio + Streamable HTTP)
+  - [x] Local stdio MCP server, scoped tools and official-client interoperability tests
+  - [ ] Remote Streamable HTTP MCP
   - [ ] Git mode: `.hivemem/memories/*.md`, where pull-request review is memory review
   - [ ] Native memory bridge: `MEMORY.md`, Codex and CodeBuddy memories; managed blocks in `CLAUDE.md` / `AGENTS.md` / `CODEBUDDY.md`
   - [x] `setup --apply / --eject`, backups, dry runs and `doctor`

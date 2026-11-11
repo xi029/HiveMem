@@ -4,6 +4,8 @@ import { mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Client } from '@modelcontextprotocol/client';
+import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 
 // Pack and install outside the checkout so missing/stale dist files cannot hide behind source files.
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -16,6 +18,7 @@ try {
   const packed = JSON.parse(runNpm(['pack', '--json', '--pack-destination', temporary], root))[0];
   assert.ok(packed.files.some((file) => file.path === 'dist/cli/main.js'));
   assert.ok(packed.files.some((file) => file.path === 'dist/ledger/claims.js'));
+  assert.ok(packed.files.some((file) => file.path === 'dist/mcp/server.js'));
   assert.ok(!packed.files.some((file) => /(^|\/)(node_modules|test)\//.test(file.path) || /\.db(?:-|$)/.test(file.path)));
   runNpm(['install', '--prefix', temporary, '--ignore-scripts', '--offline', '--no-audit', '--no-fund', '--package-lock=false', join(temporary, packed.filename)], temporary);
   const cli = join(temporary, 'node_modules', 'hivemem', 'dist', 'cli', 'main.js');
@@ -45,7 +48,22 @@ try {
   assert.match(JSON.parse(context).hookSpecificOutput.additionalContext, /Packaged revisions need review/);
   assert.equal(JSON.parse(run('setup', '--eject', ...setupArgs)).changed, true);
   assert.deepEqual(JSON.parse(readFileSync(config, 'utf8')), {});
-  console.log(`Package check passed: ${packed.filename}; offline installation, built CLI and installed hook verified.`);
+  const installedPackage = JSON.parse(readFileSync(join(temporary, 'node_modules', 'hivemem', 'package.json'), 'utf8'));
+  assert.deepEqual(installedPackage.dependencies ?? {}, {});
+  const client = new Client({ name: 'package-check', version: '1' }, { versionNegotiation: { mode: 'auto' } });
+  const transport = new StdioClientTransport({ command: process.execPath,
+    args: [cli, 'mcp', '--cwd', temporary, '--runtime', 'package-check'], cwd: temporary,
+    env: { ...process.env, HIVEMEM_HOME: join(temporary, 'memory') }, stderr: 'pipe' });
+  try {
+    await client.connect(transport, { timeout: 15_000 });
+    assert.equal(client.getProtocolEra(), 'modern');
+    assert.equal((await client.listTools()).tools.length, 5);
+    const recalled = await client.callTool({ name: 'hivemem_recall', arguments: {} });
+    assert.match(JSON.stringify(recalled.content), /Packaged revisions need review/);
+    const saved = await client.callTool({ name: 'hivemem_remember', arguments: { content: 'Packaged MCP writes work' } });
+    assert.equal(saved.structuredContent.status, 'tentative');
+  } finally { await client.close(); }
+  console.log(`Package check passed: ${packed.filename}; offline installation, built CLI, hooks and MCP client verified.`);
 } finally {
   rmSync(temporary, { recursive: true, force: true });
 }

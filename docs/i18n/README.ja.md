@@ -39,7 +39,7 @@ Claude Code · Codex · CodeBuddy · Cursor · Gemini CLI · マルチエージ�
 - **コアは LLM を一切呼び出さない。** ローカルファーストで SQLite ファイル 1 つだけを使い、トークン代は一切増えません。
 
 > [!NOTE]
-> **ステータス：v0.1 開発中。** ledger コア、ローカルストア、recall、CLI、hook シムは動作し、テスト済みです（ローカルでは Windows、CI では macOS と Linux）。MCP サーバー、git モード、ネイティブメモリブリッジは次に構築します（[ロードマップ](#%EF%B8%8F-ロードマップ)）。進捗を追うにはリポジトリにスターを付けてください。インターフェースはまだ変わる可能性があります。
+> **ステータス：v0.1 開発中。** ledger コア、ローカルストア、recall、CLI、hook、ローカル stdio MCP は動作し、テスト済みです（ローカルでは Windows、CI では macOS と Linux）。リモート HTTP MCP、git モード、ネイティブメモリブリッジは計画段階です（[ロードマップ](#%EF%B8%8F-ロードマップ)）。進捗を追うにはリポジトリにスターを付けてください。インターフェースはまだ変わる可能性があります。
 
 ## 🎬 デモ
 
@@ -130,9 +130,9 @@ hivemem doctor --target claude-code
 </details>
 
 <details>
-<summary><b>その他すべて</b>: MCP <i>（v0.1 で提供予定）</i></summary>
+<summary><b>その他のローカルツールとフレームワーク</b>: stdio MCP</summary>
 
-MCP サーバー（stdio と Streamable HTTP）で、Gemini CLI、Copilot、Windsurf、Zed、ChatGPT、Claude.ai、エージェントフレームワークに対応する予定です。
+互換性のある MCP クライアントから `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name` を起動します。検索、記録、詳細、inbox、プロジェクト情報の 5 ツールを提供し、`--read-only` で書き込みを無効にできます。エージェントの観察には既存の信頼ルールが適用されます。絶対パスと接続設定は [MCP ガイド](../mcp.md)を参照してください。リモート Streamable HTTP は計画段階です。
 </details>
 
 **直接伝える。** 接続済みのどのツールでも、プロンプトを `覚えて：…`（または `覚えておいて：…`、`remember that …`、`记住：…`、`기억해: …`）で始めると、*あなた自身*の発言として保存されます。
@@ -237,6 +237,7 @@ HiveMem を特徴づける設計上の選択：
 | `hivemem setup [--target …]` | hook 設定のプレビュー |
 | `hivemem setup --apply / --eject --target <tool>` | 管理対象の hook を追加・削除。`--dry-run`、`--config`、`--json` に対応 |
 | `hivemem doctor [--target <tool>]` | hook を実行せずにインストールを検査。`--json` に対応 |
+| `hivemem mcp --cwd <project> [--runtime <tool>] [--read-only]` | stdio 経由でローカル MCP クライアントに共有メモリを提供 |
 
 ID は末尾 6 文字に短縮できます。データは `~/.hivemem/` に保存されます（`HIVEMEM_HOME` で変更可能）。
 
@@ -248,7 +249,8 @@ ID は末尾 6 文字に短縮できます。データは `~/.hivemem/` に保�
   - [x] 書き込みパス：秘匿化、重複排除、裏付け、claim key の競合
   - [x] Recall：スコアリング、スコープチェーン、トークン予算、セッションごとの重複排除
   - [x] CLI と hook シム（Claude Code · Codex · CodeBuddy · Cursor）
-  - [ ] MCP サーバー（stdio + Streamable HTTP）
+  - [x] ローカル stdio MCP、スコープ制限付きツール、公式クライアントとの相互運用テスト
+  - [ ] リモート Streamable HTTP MCP
   - [ ] Git モード：`.hivemem/memories/*.md`。プルリクエストのレビューがそのままメモリのレビューになる
   - [ ] ネイティブメモリブリッジ：`MEMORY.md`、Codex と CodeBuddy のメモリ、`CLAUDE.md` / `AGENTS.md` / `CODEBUDDY.md` 内の管理ブロック
   - [x] `setup --apply / --eject`、バックアップ、プレビュー、`doctor`
