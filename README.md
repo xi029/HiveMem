@@ -77,12 +77,11 @@ Requires **Node.js ≥ 22.18**. HiveMem has no runtime dependencies and uses Nod
 
 ```bash
 git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
-npm install          # dev tooling only (TypeScript)
-npm run check        # types, tests, build, offline package installation and CLI checks
+node src/cli/main.ts --help   # ready to use; no npm install or build required
 ```
 
 > [!TIP]
-> Once published, this becomes `npx hivemem setup`. Until then, replace `hivemem` with `node src/cli/main.ts` in the commands below.
+> Replace `hivemem` with `node src/cli/main.ts` in the commands below. For an optional global command, run `npm ci`, `npm run build`, then `npm install --global .` from this stable checkout. Contributors can run `npm ci` and `npm run check` for the full checks.
 
 ### 2. Try it in 60 seconds
 
@@ -131,6 +130,8 @@ Use `--runtime cursor`. HiveMem replies in Cursor's `additional_context` format.
 
 <details>
 <summary><b>Other local tools and frameworks</b>: stdio MCP</summary>
+
+Generate ready-to-use paths with `hivemem setup --mcp --target claude-code --cwd /path/to/project --output hivemem.mcp.json`, then load it with `claude --mcp-config hivemem.mcp.json`. Use `--target codex` to print a TOML section, or `--target generic` for other JSON clients. See the [real-host acceptance results](docs/host-acceptance.md): Codex reads passed; write approval and other hosts remain to be verified.
 
 Launch `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name` from a compatible MCP client. It exposes recall, remember, show, inbox and project tools; add `--read-only` to disable writes. Agent observations follow the existing trust rules. See the [MCP configuration guide](docs/mcp.md) for absolute executable paths and client setup. Remote Streamable HTTP remains planned.
 </details>
@@ -237,6 +238,7 @@ Deep dive: [ARCHITECTURE.md](docs/ARCHITECTURE.md) covers the data model, ledger
 | `hivemem setup [--target …]` | Preview hook configuration |
 | `hivemem setup --apply / --eject --target <tool>` | Install or remove managed hooks; supports `--dry-run`, `--config` and `--json` |
 | `hivemem doctor [--target <tool>]` | Inspect installation files without running hooks (`--json` available) |
+| `hivemem setup --mcp --target <host> --cwd <project>` | Generate MCP config; optional `--output <new-file>` and `--read-only` |
 | `hivemem mcp --cwd <project> [--runtime <tool>] [--read-only]` | Serve shared memory to local MCP clients over stdio |
 
 IDs can be shortened to their last 6 characters. Data lives in `~/.hivemem/` (override with `HIVEMEM_HOME`).

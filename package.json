@@ -20,6 +20,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --test --test-reporter=spec \"test/**/*.test.ts\"",
     "test:package": "node scripts/test-package.mjs",
+    "test:host:codex": "node scripts/accept-codex.mjs",
     "prepack": "npm run build",
     "check": "npm run typecheck && npm test && npm run test:package",
     "dev": "node src/cli/main.ts"

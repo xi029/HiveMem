@@ -51,9 +51,9 @@ try {
   const installedPackage = JSON.parse(readFileSync(join(temporary, 'node_modules', 'hivemem', 'package.json'), 'utf8'));
   assert.deepEqual(installedPackage.dependencies ?? {}, {});
   const client = new Client({ name: 'package-check', version: '1' }, { versionNegotiation: { mode: 'auto' } });
-  const transport = new StdioClientTransport({ command: process.execPath,
-    args: [cli, 'mcp', '--cwd', temporary, '--runtime', 'package-check'], cwd: temporary,
-    env: { ...process.env, HIVEMEM_HOME: join(temporary, 'memory') }, stderr: 'pipe' });
+  const generated = JSON.parse(run('setup', '--mcp', '--target', 'generic', '--cwd', temporary)).mcpServers.hivemem;
+  assert.equal(generated.args[0], cli);
+  const transport = new StdioClientTransport({ ...generated, cwd: temporary, stderr: 'pipe' });
   try {
     await client.connect(transport, { timeout: 15_000 });
     assert.equal(client.getProtocolEra(), 'modern');

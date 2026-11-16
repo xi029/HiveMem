@@ -77,12 +77,11 @@ Claude Code · Codex · CodeBuddy · Cursor · Gemini CLI · マルチエージ�
 
 ```bash
 git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
-npm install          # 開発用ツールのみ（TypeScript）
-npm run check        # 型検査・テスト・ビルド・オフラインインストール・CLI 検証
+node src/cli/main.ts --help   # npm install やビルドなしで実行可能
 ```
 
 > [!TIP]
-> 公開後は `npx hivemem setup` になります。それまでは、以下のコマンドの `hivemem` を `node src/cli/main.ts` に置き換えてください。
+> 以下の `hivemem` を `node src/cli/main.ts` に置き換えてください。グローバルコマンドが必要なら、このチェックアウトで `npm ci`、`npm run build`、`npm install --global .` を実行します。開発者向けの全検証は `npm ci` と `npm run check` です。
 
 ### 2. 60 秒で試す
 
@@ -131,6 +130,8 @@ hivemem doctor --target claude-code
 
 <details>
 <summary><b>その他のローカルツールとフレームワーク</b>: stdio MCP</summary>
+
+`hivemem setup --mcp --target claude-code --cwd /path/to/project --output hivemem.mcp.json` で設定を生成し、`claude --mcp-config hivemem.mcp.json` で読み込みます。`--target codex` は TOML、`--target generic` は汎用 JSON を出力します。[実ホスト検証](../host-acceptance.md)では Codex の読み取りを確認済みです。書き込み承認と他のホストは未検証です。
 
 互換性のある MCP クライアントから `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name` を起動します。検索、記録、詳細、inbox、プロジェクト情報の 5 ツールを提供し、`--read-only` で書き込みを無効にできます。エージェントの観察には既存の信頼ルールが適用されます。絶対パスと接続設定は [MCP ガイド](../mcp.md)を参照してください。リモート Streamable HTTP は計画段階です。
 </details>
@@ -237,6 +238,7 @@ HiveMem を特徴づける設計上の選択：
 | `hivemem setup [--target …]` | hook 設定のプレビュー |
 | `hivemem setup --apply / --eject --target <tool>` | 管理対象の hook を追加・削除。`--dry-run`、`--config`、`--json` に対応 |
 | `hivemem doctor [--target <tool>]` | hook を実行せずにインストールを検査。`--json` に対応 |
+| `hivemem setup --mcp --target <host> --cwd <project>` | MCP 設定を生成。`--output <new-file>` と `--read-only` に対応 |
 | `hivemem mcp --cwd <project> [--runtime <tool>] [--read-only]` | stdio 経由でローカル MCP クライアントに共有メモリを提供 |
 
 ID は末尾 6 文字に短縮できます。データは `~/.hivemem/` に保存されます（`HIVEMEM_HOME` で変更可能）。

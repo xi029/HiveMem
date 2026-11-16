@@ -4,7 +4,27 @@ HiveMem provides a local **stdio MCP server**. A compatible desktop app, coding 
 
 ## Connect a client
 
-Use a stable checkout with Node.js 22.18 or newer. Until the npm release, point the client at the source CLI using **absolute paths**:
+Use a stable checkout with Node.js 22.18 or newer. Generate a configuration with the correct Node, CLI and project paths automatically:
+
+```bash
+# Run from the HiveMem checkout; choose the project whose memory you want to share.
+node src/cli/main.ts setup --mcp --target claude-code --cwd /path/to/project --output hivemem.mcp.json
+claude --strict-mcp-config --mcp-config hivemem.mcp.json
+
+# Codex uses TOML. Print a section to add to your existing Codex config.toml.
+node src/cli/main.ts setup --mcp --target codex --cwd /path/to/project
+
+# Other clients using the common mcpServers layout:
+node src/cli/main.ts setup --mcp --target generic --cwd /path/to/project
+```
+
+For Claude Code, `--strict-mcp-config` loads only the supplied MCP configuration for that session; omit it to retain your other servers. Alternatively, generate the file as your project's `.mcp.json` and follow the host's project-server approval flow. For Codex, add the generated section to `$CODEX_HOME/config.toml` (normally `~/.codex/config.toml`), then check `codex mcp get hivemem`. Inspect an existing `hivemem` entry before replacing it. Restart the host after changing its configuration.
+
+`--output` writes UTF-8 directly and **refuses existing files**, including symlinks. It creates a standalone configuration, not a merge into existing settings. With no `--output`, stdout contains only the configuration. Add `--read-only` to generate a server without the write tool. If `HIVEMEM_HOME` is set when generating, its absolute path is included so a desktop host uses the same store. Preview does not open the database. Generated paths remain tied to this checkout and Node installation.
+
+There is no npm package installation required to run the source CLI. For an optional global `hivemem` command, run `npm ci`, `npm run build`, then `npm install --global .` from the stable checkout. Generate configuration again using that installed command if you change installations.
+
+The generated JSON has this shape:
 
 ```json
 {
@@ -26,7 +46,7 @@ This is the common `mcpServers` JSON layout; use your client's documented config
 
 `--cwd` is required and must name an existing directory. This prevents a desktop client's working directory from silently becoming your memory project. Configure one server entry per project. `--runtime` defaults to `mcp`; choose the same stable tool name used by that host's hooks, such as `codex` or `claude-code`. Merely renaming a client does not establish independent evidence. All clients using the default `mcp` runtime count as the same source.
 
-The client may optionally set `HIVEMEM_HOME` in the subprocess environment to choose a different memory store. Keep the checkout and Node paths valid. This round adds the server command and examples; `setup --apply` continues to install hooks and does not edit MCP client settings.
+The client may optionally set `HIVEMEM_HOME` in the subprocess environment to choose a different memory store. Keep the checkout and Node paths valid. `setup --apply` installs hooks; `setup --mcp` generates MCP configuration and does not edit existing host settings.
 
 For a client that should only inspect memory, append `--read-only`. It removes the write tool from discovery and rejects direct attempts to call it. This is a read-only **tool surface**: opening the store may still initialize the database, apply local projection migrations and update project metadata.
 
@@ -62,4 +82,4 @@ The implementation follows the official [stdio framing](https://modelcontextprot
 
 Only newline-delimited JSON-RPC goes to stdout. Input frames are limited to 1 MiB, invalid UTF-8 is rejected, and an oversized frame closes the transport. EOF closes the database and ends the process. Operations are short, synchronous local transactions; cancellation notifications cannot undo completed writes. Logs and Node's SQLite experimental warnings use stderr.
 
-`npm run check` exercises raw protocol cases and the official TypeScript MCP client's legacy and automatic modern negotiation. The offline package test starts the compiled server from a fresh installation and calls it through that client. The SDK is a development dependency only. Individual host applications still need their own configuration and acceptance check: connect, run `hivemem_project`, recall a known convention, then confirm that a new observation appears as tentative in the CLI inbox.
+`npm run check` exercises raw protocol cases and the official TypeScript MCP client's legacy and automatic modern negotiation. The offline package test generates a configuration from a fresh installation, starts its compiled server and calls it through that client. The SDK is a development dependency only. Host-specific results and an opt-in live Codex check are recorded in [host acceptance](host-acceptance.md).

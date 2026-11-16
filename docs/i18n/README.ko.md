@@ -77,12 +77,11 @@ agent 도구의 이슈 트래커에서 가장 많이 논의되는 메모리 관�
 
 ```bash
 git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
-npm install          # 개발 도구만 설치 (TypeScript)
-npm run check        # 타입·테스트·빌드·오프라인 설치·CLI 검증
+node src/cli/main.ts --help   # npm install이나 빌드 없이 바로 실행
 ```
 
 > [!TIP]
-> 배포된 뒤에는 `npx hivemem setup`으로 바뀝니다. 그전까지는 아래 명령에서 `hivemem`을 `node src/cli/main.ts`로 바꿔 실행하세요.
+> 아래 명령의 `hivemem`을 `node src/cli/main.ts`로 바꿔 실행하세요. 전역 명령이 필요하면 이 체크아웃에서 `npm ci`, `npm run build`, `npm install --global .`을 실행하세요. 개발자용 전체 검증은 `npm ci`와 `npm run check`입니다.
 
 ### 2. 60초 만에 써 보기
 
@@ -131,6 +130,8 @@ hivemem doctor --target claude-code
 
 <details>
 <summary><b>다른 로컬 도구와 프레임워크</b>: stdio MCP</summary>
+
+`hivemem setup --mcp --target claude-code --cwd /path/to/project --output hivemem.mcp.json`으로 설정을 생성하고 `claude --mcp-config hivemem.mcp.json`으로 불러오세요. `--target codex`는 TOML, `--target generic`은 일반 JSON을 출력합니다. [실제 호스트 검증](../host-acceptance.md)에서 Codex 읽기는 통과했으며 쓰기 승인과 다른 호스트는 아직 검증되지 않았습니다.
 
 호환되는 MCP 클라이언트에서 `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name`을 실행하세요. 검색, 기록, 상세 조회, inbox, 프로젝트 정보의 다섯 도구를 제공하며 `--read-only`로 쓰기를 비활성화할 수 있습니다. Agent 관찰에는 기존 신뢰 규칙이 적용됩니다. 절대 경로와 연결 설정은 [MCP 가이드](../mcp.md)를 참고하세요. 원격 Streamable HTTP는 계획 단계입니다.
 </details>
@@ -237,6 +238,7 @@ HiveMem을 차별화하는 설계 선택:
 | `hivemem setup [--target …]` | hook 설정 미리 보기 |
 | `hivemem setup --apply / --eject --target <tool>` | 관리되는 hook 설치·제거. `--dry-run`, `--config`, `--json` 지원 |
 | `hivemem doctor [--target <tool>]` | hook을 실행하지 않고 설치 파일 검사. `--json` 지원 |
+| `hivemem setup --mcp --target <host> --cwd <project>` | MCP 설정 생성. `--output <new-file>`와 `--read-only` 지원 |
 | `hivemem mcp --cwd <project> [--runtime <tool>] [--read-only]` | stdio로 로컬 MCP 클라이언트에 공유 메모리 제공 |
 
 ID는 마지막 6자로 줄여 쓸 수 있습니다. 데이터는 `~/.hivemem/`에 저장됩니다(`HIVEMEM_HOME`으로 변경 가능).

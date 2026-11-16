@@ -31,6 +31,8 @@ Usage:
   hivemem rebuild                    rebuild projections and search indexes from the ledger
   hivemem hook <event> --runtime claude-code|codex|codebuddy|cursor [--record]   (reads JSON on stdin)
   hivemem setup [--target claude-code,codex,codebuddy]   preview hook config
+  hivemem setup --mcp --target claude-code|codex|generic --cwd <project-directory>
+                [--output <new-file>] [--read-only]   generate ready-to-use MCP config
   hivemem setup --apply|--eject --target <tool> [--config <file>] [--dry-run] [--json]
   hivemem doctor [--target <tool>] [--config <file>] [--json]   inspect the installation
   hivemem mcp --cwd <project-directory> [--runtime <tool>] [--read-only]   serve MCP over stdio
@@ -38,7 +40,7 @@ Usage:
 Options: --runtime <name> (default: cli)  --cwd <dir>  --json
 Data: ${hivememHome()}`;
 
-const BOOLEANS = new Set(['json', 'all', 'record', 'help', 'tentative', 'apply', 'eject', 'dry-run', 'read-only']);
+const BOOLEANS = new Set(['json', 'all', 'record', 'help', 'tentative', 'apply', 'eject', 'dry-run', 'read-only', 'mcp']);
 
 function parseKey(v?: string): ClaimKey | undefined {
   if (!v) return undefined;
@@ -68,6 +70,22 @@ async function main(argv: string[]): Promise<number> {
   const cmd = a.positional[0];
   if (!cmd || a.flags.help || cmd === 'help') {
     console.log(HELP);
+    return 0;
+  }
+
+  if (cmd === 'setup' && a.flags.mcp) {
+    const allowed = new Set(['mcp', 'target', 'cwd', 'output', 'read-only']);
+    for (const flag of Object.keys(a.flags)) if (!allowed.has(flag)) throw new Error(`unknown MCP setup option --${flag}`);
+    if (a.positional.length !== 1) throw new Error('setup does not take positional arguments');
+    const target = str(a.flags, 'target');
+    const cwd = str(a.flags, 'cwd');
+    if (!target || !cwd) throw new Error('MCP setup requires --target claude-code|codex|generic and --cwd <project-directory>');
+    const { mcpConfig, writeMcpConfig } = await import('../mcp/config.ts');
+    const config = mcpConfig({ target, cwd, launcher: { node: process.execPath, cli: fileURLToPath(import.meta.url) },
+      readOnly: !!a.flags['read-only'], home: process.env.HIVEMEM_HOME });
+    const output = str(a.flags, 'output');
+    if (output) console.log(`Created: ${writeMcpConfig(output, config)}`);
+    else process.stdout.write(config);
     return 0;
   }
 

@@ -77,12 +77,11 @@ Claude Code · Codex · CodeBuddy · Cursor · Gemini CLI · 多智能体框架
 
 ```bash
 git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
-npm install          # 仅开发工具（TypeScript）
-npm run check        # 类型、测试、构建、离线安装与 CLI 验证
+node src/cli/main.ts --help   # 直接可用，无需 npm install 或构建
 ```
 
 > [!TIP]
-> 发布到 npm 后可直接 `npx hivemem setup`。在此之前，请把下面命令里的 `hivemem` 换成 `node src/cli/main.ts`。
+> 请把下面命令里的 `hivemem` 换成 `node src/cli/main.ts`。需要全局命令时，在固定的检出目录依次运行 `npm ci`、`npm run build`、`npm install --global .`。贡献者可用 `npm ci` 和 `npm run check` 执行完整检查。
 
 ### 2. 60 秒上手
 
@@ -131,6 +130,8 @@ hivemem doctor --target claude-code
 
 <details>
 <summary><b>其他本地工具与框架</b>：stdio MCP</summary>
+
+运行 `hivemem setup --mcp --target claude-code --cwd /path/to/project --output hivemem.mcp.json` 自动生成配置，再用 `claude --mcp-config hivemem.mcp.json` 加载。`--target codex` 输出 TOML，`--target generic` 输出通用 JSON。[真实宿主验收](../host-acceptance.md)中 Codex 读取已通过；写入批准及其他宿主仍待验证。
 
 在兼容的 MCP 客户端中启动 `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name`。提供检索、写入、详情、收件箱和项目信息五个工具；加上 `--read-only` 可禁用写入。Agent 观察沿用现有信任规则。绝对路径和客户端配置见 [MCP 接入指南](../mcp.md)。远程 Streamable HTTP 仍在规划中。
 </details>
@@ -237,6 +238,7 @@ HiveMem 与众不同的设计选择：
 | `hivemem setup [--target …]` | 预览 Hook 配置 |
 | `hivemem setup --apply / --eject --target <tool>` | 安装或卸载托管 Hook；支持 `--dry-run`、`--config`、`--json` |
 | `hivemem doctor [--target <tool>]` | 检查安装文件，不执行 Hook；支持 `--json` |
+| `hivemem setup --mcp --target <host> --cwd <project>` | 自动生成 MCP 配置；支持 `--output <new-file>` 与 `--read-only` |
 | `hivemem mcp --cwd <project> [--runtime <tool>] [--read-only]` | 通过 stdio 向本地 MCP 客户端提供共享记忆 |
 
 ID 可以只写最后 6 个字符。数据保存在 `~/.hivemem/`（可用 `HIVEMEM_HOME` 覆盖）。
