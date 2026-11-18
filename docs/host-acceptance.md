@@ -14,6 +14,12 @@ Windows, Node.js source CLI, temporary project path containing spaces and Chines
 
 These are **partial host acceptance results**, not a claim that all integrations are verified. Automatic hook execution in real host sessions remains unverified. Hook command adapters, install/eject and the packaged hook invocation have automated coverage.
 
+## Installed package trial, 2026-11-18
+
+On Windows with Node 24.19.0, we installed the npm tarball offline into a temporary global prefix and ran its `hivemem` command from a separate project with spaces and Chinese characters in its path. Separate processes saved and recalled the user's API convention, then listed an agent's tentative observation in the inbox.
+
+With an isolated `CLAUDE_CONFIG_DIR`, we generated a read-only `.mcp.json` in that project and ran `claude mcp list`. Claude Code 2.1.293 found `hivemem` with the installed executable and project path, then reported **Pending approval**. This verifies configuration discovery only. To proceed in your own project, open `claude` there, review the project server and approve it if you trust it; then verify recall inside the host.
+
 ## Repeat the Codex check
 
 This is an opt-in real model call, using your existing Codex login and quota. It is deliberately excluded from `npm run check` and CI.

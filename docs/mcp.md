@@ -4,12 +4,22 @@ HiveMem provides a local **stdio MCP server**. A compatible desktop app, coding 
 
 ## Connect a client
 
+**First check in Claude Code:** with the `hivemem` command installed, run these in the project whose conventions you want to remember:
+
+```bash
+hivemem project
+hivemem setup --mcp --target claude-code --cwd . --read-only --output .mcp.json
+claude mcp list
+```
+
+If `.mcp.json` already exists, omit `--output` and merge just the generated `hivemem` entry into `mcpServers`. If `claude mcp list` says **Pending approval**, Claude has found the configuration. Open `claude` in the same project and review the server. After approval, ask it to call `hivemem_project` and check the returned root against `hivemem project`. This first check only enables reads. The generated file contains machine-specific absolute paths.
+
 Use a stable checkout with Node.js 22.18 or newer. Generate a configuration with the correct Node, CLI and project paths automatically:
 
 ```bash
 # Run from the HiveMem checkout; choose the project whose memory you want to share.
-node src/cli/main.ts setup --mcp --target claude-code --cwd /path/to/project --output hivemem.mcp.json
-claude --strict-mcp-config --mcp-config hivemem.mcp.json
+node src/cli/main.ts setup --mcp --target claude-code --cwd /path/to/project --output /path/to/project/hivemem.mcp.json
+# In a terminal in that project: claude --strict-mcp-config --mcp-config hivemem.mcp.json
 
 # Codex uses TOML. Print a section to add to your existing Codex config.toml.
 node src/cli/main.ts setup --mcp --target codex --cwd /path/to/project

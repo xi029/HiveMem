@@ -76,12 +76,13 @@ agent 도구의 이슈 트래커에서 가장 많이 논의되는 메모리 관�
 **Node.js ≥ 22.18**이 필요합니다. HiveMem은 런타임 의존성이 없고 Node 내장 SQLite를 사용하므로 컴파일할 것이 없습니다.
 
 ```bash
-git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
-node src/cli/main.ts --help   # npm install이나 빌드 없이 바로 실행
+git clone https://github.com/xi029/HiveMem.git hivemem
+cd hivemem
+node src/cli/main.ts demo
 ```
 
 > [!TIP]
-> 아래 명령의 `hivemem`을 `node src/cli/main.ts`로 바꿔 실행하세요. 전역 명령이 필요하면 이 체크아웃에서 `npm ci`, `npm run build`, `npm install --global .`을 실행하세요. 개발자용 전체 검증은 `npm ci`와 `npm run check`입니다.
+> 데모는 빌드나 로그인 없이 규칙을 저장하고 다른 CLI 프로세스에서 다시 찾은 뒤 임시 데이터를 삭제합니다. **내 프로젝트**에서 사용하려면 HiveMem 디렉터리에서 `npm ci`, `npm run build`, `npm install --global .`을 차례로 실행하세요. 이 디렉터리는 그대로 두고 내 프로젝트로 이동한 뒤 `hivemem project`로 저장 대상을 확인하세요. 전역 설치 없이 사용하려면 내 프로젝트에서 `hivemem` 대신 `node "/HiveMem의절대경로/src/cli/main.ts"`를 실행하세요.
 
 ### 2. 60초 만에 써 보기
 

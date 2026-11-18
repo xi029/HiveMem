@@ -5,13 +5,20 @@ import type { ClaimKey, Kind, MemoryState, Method, Status } from '../ledger/type
 import { KINDS } from '../ledger/types.ts';
 import { type Ctx, hivememHome, openContext, type ScopeLevel } from '../identity/context.ts';
 import { remember, resolveConflict, revise, setMeta, transition } from '../ingest/write.ts';
-import { recall, renderLine } from '../recall/recall.ts';
+import { recall, renderLine, type RecallResult } from '../recall/recall.ts';
 import { runHook } from '../hooks/hook.ts';
 import { setupText, targetName, TARGETS } from '../hooks/setup.ts';
 import { doctor, setup } from '../hooks/install.ts';
 import { type Args, parseArgs, str } from './args.ts';
 
-const HELP = `hivemem - shared memory for all your agents
+const START = `HiveMem shares project conventions between your coding agents.
+
+  hivemem demo          try a handoff in a disposable store (no host setup)
+  hivemem project       check which project you are in
+  hivemem --version     check the installed version
+  hivemem --help        see all commands`;
+
+const HELP = `${START}
 
 Usage:
   hivemem remember <text> [--kind fact|decision|event|procedure] [--key subject:aspect]
@@ -65,11 +72,29 @@ function short(m: MemoryState): string {
   return `${m.id.slice(-6)}  ${m.status.padEnd(11)} ${m.kind.padEnd(9)} ${m.content.replace(/\s+/g, ' ').slice(0, 90)}`;
 }
 
+function emptyRecall(result: RecallResult, brief: boolean): string {
+  if (result.truncated) return 'No memories fit this budget. Try a larger --budget.';
+  if (result.pending.tentative || result.pending.review) return 'No memories selected. Run `hivemem inbox` to review pending entries.';
+  return brief ? 'Nothing to include in this brief. Save a convention with `hivemem remember "API fields use snake_case"`.'
+    : 'No matching memory. Try a keyword from the saved text, or run `hivemem list`.';
+}
+
 async function main(argv: string[]): Promise<number> {
+  if (argv.length === 1 && (argv[0] === '--version' || argv[0] === '-V')) {
+    console.log(JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version);
+    return 0;
+  }
   const a = parseArgs(argv, BOOLEANS);
   const cmd = a.positional[0];
   if (!cmd || a.flags.help || cmd === 'help') {
-    console.log(HELP);
+    console.log(argv.length ? HELP : START);
+    return 0;
+  }
+
+  if (cmd === 'demo') {
+    if (argv.length !== 1) throw new Error('Usage: hivemem demo (always uses a disposable store)');
+    const { demo } = await import('./demo.ts');
+    console.log(demo(fileURLToPath(import.meta.url)));
     return 0;
   }
 
@@ -180,12 +205,12 @@ async function main(argv: string[]): Promise<number> {
       }
       case 'recall': {
         const r = recall(ctx, { query: a.positional.slice(1).join(' '), budget: Number(str(a.flags, 'budget') ?? 1200), includeTentative: !!a.flags.tentative });
-        print(a, { ...r, items: r.items.map((i) => ({ id: i.memory.id, score: i.score, signals: i.signals, line: i.line })) }, () => r.text || '(nothing relevant)');
+        print(a, { ...r, items: r.items.map((i) => ({ id: i.memory.id, score: i.score, signals: i.signals, line: i.line })) }, () => r.text || emptyRecall(r, false));
         return 0;
       }
       case 'brief': {
         const r = recall(ctx, { budget: Number(str(a.flags, 'budget') ?? 800) });
-        print(a, r.items.map((i) => i.memory.id), () => r.text || '(no memories yet for this project)');
+        print(a, r.items.map((i) => i.memory.id), () => r.text || emptyRecall(r, true));
         return 0;
       }
       case 'list':
@@ -193,7 +218,7 @@ async function main(argv: string[]): Promise<number> {
         const statuses = cmd === 'inbox' ? (['tentative', 'conflicted', 'quarantined'] as Status[]) : str(a.flags, 'status') ? [str(a.flags, 'status') as Status] : undefined;
         const kinds = str(a.flags, 'kind') ? [str(a.flags, 'kind') as Kind] : undefined;
         const ms = ctx.store.list({ scopes: a.flags.all ? undefined : ctx.chain.map((c) => c.scope), statuses, kinds, limit: 200 });
-        print(a, ms, () => (ms.length ? ms.map(short).join('\n') : '(empty)'));
+        print(a, ms, () => (ms.length ? ms.map(short).join('\n') : cmd === 'inbox' ? 'Nothing waiting for review.' : 'No memories in this selection. Run `hivemem project` to check the project.'));
         return 0;
       }
       case 'show': {

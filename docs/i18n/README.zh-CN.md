@@ -76,12 +76,13 @@ Claude Code · Codex · CodeBuddy · Cursor · Gemini CLI · 多智能体框架
 需要 **Node.js ≥ 22.18**。HiveMem 没有运行时依赖，使用 Node 内置的 SQLite，无需编译任何东西。
 
 ```bash
-git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
-node src/cli/main.ts --help   # 直接可用，无需 npm install 或构建
+git clone https://github.com/xi029/HiveMem.git hivemem
+cd hivemem
+node src/cli/main.ts demo
 ```
 
 > [!TIP]
-> 请把下面命令里的 `hivemem` 换成 `node src/cli/main.ts`。需要全局命令时，在固定的检出目录依次运行 `npm ci`、`npm run build`、`npm install --global .`。贡献者可用 `npm ci` 和 `npm run check` 执行完整检查。
+> 演示不需要构建或登录宿主。它保存一条约定，用另一个 CLI 进程把它找回来，然后删除临时数据。要在**你自己的项目**中使用下面的命令，请在 HiveMem 目录依次运行 `npm ci`、`npm run build`、`npm install --global .`。保留这个目录，切换到你自己的项目，再运行 `hivemem project` 核对记忆归属。不想全局安装，也可以在自己的项目中把 `hivemem` 换成 `node "HiveMem 的绝对路径/src/cli/main.ts"`。
 
 ### 2. 60 秒上手
 

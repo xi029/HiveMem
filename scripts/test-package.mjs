@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,9 +25,14 @@ try {
   const run = (...args) => execFileSync(process.execPath, [cli, ...args], {
     cwd: temporary, env: { ...process.env, HIVEMEM_HOME: join(temporary, 'memory') }, encoding: 'utf8', timeout: 15_000,
   });
+  assert.equal(run('--version').trim(), packed.version);
+  assert.match(run('demo'), /API fields use snake_case\..*user-stated via claude-code/);
+  assert.equal(existsSync(join(temporary, 'memory')), false, 'demo must not initialize the configured store');
+  assert.match(run('brief'), /hivemem remember/);
   const memory = JSON.parse(run('remember', 'Packaged CLI works', '--as', 'user', '--json'));
   assert.equal(memory.status, 'committed');
   assert.match(run('brief'), /Packaged CLI works/);
+  assert.match(run('brief', '--budget', '0'), /larger --budget/);
   run('revise', memory.id, 'Packaged revisions need review');
   const revised = JSON.parse(run('show', memory.id, '--json'));
   assert.equal(revised.memory.status, 'tentative');

@@ -17,6 +17,7 @@
 
 ### Added
 
+- `hivemem demo` demonstrates saving and recalling a convention across two CLI processes without changing the user's store. The CLI now has a short welcome screen, `--version` and actionable empty results.
 - Local `hivemem mcp --cwd <project>` stdio server with recall, remember, show, inbox and project tools, plus `--read-only`.
 - Modern MCP 2026-07-28 discovery and metadata, legacy initialization compatibility, bounded framing and official-client interoperability tests.
 - Fixed project/runtime identities for MCP, scoped direct-ID reads and agent-only write authority. See the [MCP guide](docs/mcp.md).

@@ -76,12 +76,13 @@ These are the most-discussed memory complaints in agent-tool issue trackers, and
 Requires **Node.js ≥ 22.18**. HiveMem has no runtime dependencies and uses Node's built-in SQLite, so there is nothing to compile.
 
 ```bash
-git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
-node src/cli/main.ts --help   # ready to use; no npm install or build required
+git clone https://github.com/xi029/HiveMem.git hivemem
+cd hivemem
+node src/cli/main.ts demo
 ```
 
 > [!TIP]
-> Replace `hivemem` with `node src/cli/main.ts` in the commands below. For an optional global command, run `npm ci`, `npm run build`, then `npm install --global .` from this stable checkout. Contributors can run `npm ci` and `npm run check` for the full checks.
+> The demo needs no build or host login. It saves a convention, recalls it from a second CLI process, then removes its temporary store. To use the commands below from **your own project**, run `npm ci`, `npm run build`, then `npm install --global .` from this checkout. Keep the checkout in place, switch to your project and run `hivemem project` to verify the scope. Without installing, use `node "/absolute/path/to/hivemem/src/cli/main.ts"` instead of `hivemem` from your project.
 
 ### 2. Try it in 60 seconds
 

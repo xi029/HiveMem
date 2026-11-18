@@ -76,12 +76,13 @@ Claude Code · Codex · CodeBuddy · Cursor · Gemini CLI · マルチエージ�
 **Node.js ≥ 22.18** が必要です。HiveMem にはランタイム依存がなく、Node 組み込みの SQLite を使うため、コンパイルは一切不要です。
 
 ```bash
-git clone https://github.com/xi029/HiveMem.git hivemem && cd hivemem
-node src/cli/main.ts --help   # npm install やビルドなしで実行可能
+git clone https://github.com/xi029/HiveMem.git hivemem
+cd hivemem
+node src/cli/main.ts demo
 ```
 
 > [!TIP]
-> 以下の `hivemem` を `node src/cli/main.ts` に置き換えてください。グローバルコマンドが必要なら、このチェックアウトで `npm ci`、`npm run build`、`npm install --global .` を実行します。開発者向けの全検証は `npm ci` と `npm run check` です。
+> デモにはビルドもログインも不要です。保存した規約を別の CLI プロセスから呼び出し、一時データを削除します。**自分のプロジェクト**で使うには、HiveMem のディレクトリで `npm ci`、`npm run build`、`npm install --global .` を順に実行します。そのディレクトリは残し、自分のプロジェクトに移動して `hivemem project` で対象を確認してください。インストールせずに使う場合は、自分のプロジェクトから `hivemem` の代わりに `node "/HiveMemの絶対パス/src/cli/main.ts"` を実行します。
 
 ### 2. 60 秒で試す
 
