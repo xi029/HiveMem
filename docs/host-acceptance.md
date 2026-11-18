@@ -22,6 +22,8 @@ With an isolated `CLAUDE_CONFIG_DIR`, we generated a read-only `.mcp.json` in th
 
 ## Repeat the Codex check
 
+On 2026-11-18 the new `doctor --mcp` check classified the actual Claude Code project report as `pending-approval` and the actual Codex stdio entry as `configured`. Neither status is a successful recall. The offline installed-package test matched the seeded ID against a real SDK tool result. A live Codex 0.167.0 rerun parsed the configuration, then timed out after 180 seconds without a verified tool result. The successful live reads on 2026-11-16 remain a separate observation; this rerun did not establish recall or write access.
+
 This is an opt-in real model call, using your existing Codex login and quota. It is deliberately excluded from `npm run check` and CI.
 
 ```bash

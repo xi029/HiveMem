@@ -65,6 +65,10 @@ try {
     assert.equal((await client.listTools()).tools.length, 5);
     const recalled = await client.callTool({ name: 'hivemem_recall', arguments: {} });
     assert.match(JSON.stringify(recalled.content), /Packaged revisions need review/);
+    const diagnosis = execFileSync(process.execPath, [cli, 'doctor', '--mcp', '--expect-id', memory.id, '--json'], {
+      cwd: temporary, input: JSON.stringify(recalled), encoding: 'utf8', timeout: 15_000,
+    });
+    assert.equal(JSON.parse(diagnosis).state, 'recall-matched');
     const saved = await client.callTool({ name: 'hivemem_remember', arguments: { content: 'Packaged MCP writes work' } });
     assert.equal(saved.structuredContent.status, 'tentative');
   } finally { await client.close(); }

@@ -17,6 +17,7 @@
 
 ### Added
 
+- `hivemem doctor --mcp` distinguishes host configuration and approval from a recall result containing a known memory ID. It reads host output without opening the store.
 - `hivemem demo` demonstrates saving and recalling a convention across two CLI processes without changing the user's store. The CLI now has a short welcome screen, `--version` and actionable empty results.
 - Local `hivemem mcp --cwd <project>` stdio server with recall, remember, show, inbox and project tools, plus `--read-only`.
 - Modern MCP 2026-07-28 discovery and metadata, legacy initialization compatibility, bounded framing and official-client interoperability tests.

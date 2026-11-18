@@ -132,6 +132,8 @@ hivemem doctor --target claude-code
 <details>
 <summary><b>其他本地工具与框架</b>：stdio MCP</summary>
 
+已经接入？用 `claude mcp get hivemem | hivemem doctor --mcp --target claude-code` 检查是否仍在等待批准。Codex 用 `codex mcp get hivemem --json | hivemem doctor --mcp --target codex`。要确认真的找回了记忆，请按[召回核验指南](../mcp.md#verify-a-recall-in-your-own-project)比对完整记忆 ID。
+
 运行 `hivemem setup --mcp --target claude-code --cwd /path/to/project --output hivemem.mcp.json` 自动生成配置，再用 `claude --mcp-config hivemem.mcp.json` 加载。`--target codex` 输出 TOML，`--target generic` 输出通用 JSON。[真实宿主验收](../host-acceptance.md)中 Codex 读取已通过；写入批准及其他宿主仍待验证。
 
 在兼容的 MCP 客户端中启动 `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name`。提供检索、写入、详情、收件箱和项目信息五个工具；加上 `--read-only` 可禁用写入。Agent 观察沿用现有信任规则。绝对路径和客户端配置见 [MCP 接入指南](../mcp.md)。远程 Streamable HTTP 仍在规划中。

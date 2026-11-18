@@ -132,6 +132,8 @@ hivemem doctor --target claude-code
 <details>
 <summary><b>다른 로컬 도구와 프레임워크</b>: stdio MCP</summary>
 
+연결했다면 `hivemem doctor --mcp`로 [호스트가 저장된 기억을 실제로 불러왔는지 확인](../mcp.md#verify-a-recall-in-your-own-project)하세요.
+
 `hivemem setup --mcp --target claude-code --cwd /path/to/project --output hivemem.mcp.json`으로 설정을 생성하고 `claude --mcp-config hivemem.mcp.json`으로 불러오세요. `--target codex`는 TOML, `--target generic`은 일반 JSON을 출력합니다. [실제 호스트 검증](../host-acceptance.md)에서 Codex 읽기는 통과했으며 쓰기 승인과 다른 호스트는 아직 검증되지 않았습니다.
 
 호환되는 MCP 클라이언트에서 `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name`을 실행하세요. 검색, 기록, 상세 조회, inbox, 프로젝트 정보의 다섯 도구를 제공하며 `--read-only`로 쓰기를 비활성화할 수 있습니다. Agent 관찰에는 기존 신뢰 규칙이 적용됩니다. 절대 경로와 연결 설정은 [MCP 가이드](../mcp.md)를 참고하세요. 원격 Streamable HTTP는 계획 단계입니다.

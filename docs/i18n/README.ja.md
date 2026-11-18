@@ -132,6 +132,8 @@ hivemem doctor --target claude-code
 <details>
 <summary><b>その他のローカルツールとフレームワーク</b>: stdio MCP</summary>
 
+接続後は `hivemem doctor --mcp` で、[ホストが既知の記憶を実際に取得できたか確認](../mcp.md#verify-a-recall-in-your-own-project)できます。
+
 `hivemem setup --mcp --target claude-code --cwd /path/to/project --output hivemem.mcp.json` で設定を生成し、`claude --mcp-config hivemem.mcp.json` で読み込みます。`--target codex` は TOML、`--target generic` は汎用 JSON を出力します。[実ホスト検証](../host-acceptance.md)では Codex の読み取りを確認済みです。書き込み承認と他のホストは未検証です。
 
 互換性のある MCP クライアントから `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name` を起動します。検索、記録、詳細、inbox、プロジェクト情報の 5 ツールを提供し、`--read-only` で書き込みを無効にできます。エージェントの観察には既存の信頼ルールが適用されます。絶対パスと接続設定は [MCP ガイド](../mcp.md)を参照してください。リモート Streamable HTTP は計画段階です。

@@ -9,10 +9,10 @@ HiveMem provides a local **stdio MCP server**. A compatible desktop app, coding 
 ```bash
 hivemem project
 hivemem setup --mcp --target claude-code --cwd . --read-only --output .mcp.json
-claude mcp list
+claude mcp get hivemem | hivemem doctor --mcp --target claude-code
 ```
 
-If `.mcp.json` already exists, omit `--output` and merge just the generated `hivemem` entry into `mcpServers`. If `claude mcp list` says **Pending approval**, Claude has found the configuration. Open `claude` in the same project and review the server. After approval, ask it to call `hivemem_project` and check the returned root against `hivemem project`. This first check only enables reads. The generated file contains machine-specific absolute paths.
+If `.mcp.json` already exists, omit `--output` and merge just the generated `hivemem` entry into `mcpServers`. `pending-approval` means Claude found the entry; open `claude` in the same project to review it. After approval, ask it to call `hivemem_project` and check the returned root against `hivemem project`. This first check only enables reads. The generated file contains machine-specific absolute paths.
 
 Use a stable checkout with Node.js 22.18 or newer. Generate a configuration with the correct Node, CLI and project paths automatically:
 
@@ -33,6 +33,16 @@ For Claude Code, `--strict-mcp-config` loads only the supplied MCP configuration
 `--output` writes UTF-8 directly and **refuses existing files**, including symlinks. It creates a standalone configuration, not a merge into existing settings. With no `--output`, stdout contains only the configuration. Add `--read-only` to generate a server without the write tool. If `HIVEMEM_HOME` is set when generating, its absolute path is included so a desktop host uses the same store. Preview does not open the database. Generated paths remain tied to this checkout and Node installation.
 
 There is no npm package installation required to run the source CLI. For an optional global `hivemem` command, run `npm ci`, `npm run build`, then `npm install --global .` from the stable checkout. Generate configuration again using that installed command if you change installations.
+
+### Verify a recall in your own project
+
+1. Check the host's report. For Claude, use the pipeline above. For Codex, run `codex mcp get hivemem --json | hivemem doctor --mcp --target codex`. `configured` means Codex lists the entry; `connected` means Claude reports a working connection. Neither proves that a memory was returned. If an entry is missing and the host writes its error to stderr, add `2>&1` before the pipe.
+2. Pick a known committed convention from `hivemem list`. Run `hivemem show <short-id>` and copy its full 26-character ID. In the host, ask: “Use `hivemem_recall` to look up [keyword from my convention].” Inspect the actual tool result, rather than the assistant's summary.
+3. To compare automatically, save just that result as `recall.json` locally. Run `hivemem doctor --mcp --expect-id FULL_ID < recall.json` (PowerShell: `Get-Content -Raw -Encoding utf8 recall.json | hivemem doctor --mcp --expect-id FULL_ID`). `recall-matched` means the expected ID is in a returned item and its line is present in the rendered memory. The check compares the input you give it; it does not authenticate its source. No transcript or memory content is copied to the diagnostic output.
+
+Add `--json` for scripts. A recognized enabled configuration, connection or matching recall exits 0; pending approval, an unknown report or a mismatch exits nonzero. These checks read stdin only, do not launch a host and do not open the store. For an automated real Codex session with disposable data, see [host acceptance](host-acceptance.md).
+
+### Configuration format
 
 The generated JSON has this shape:
 

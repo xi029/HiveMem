@@ -42,6 +42,8 @@ Usage:
                 [--output <new-file>] [--read-only]   generate ready-to-use MCP config
   hivemem setup --apply|--eject --target <tool> [--config <file>] [--dry-run] [--json]
   hivemem doctor [--target <tool>] [--config <file>] [--json]   inspect the installation
+  hivemem doctor --mcp (--target claude-code|codex | --expect-id <full-id>) [--json]
+                                     check piped host status or a recall tool result
   hivemem mcp --cwd <project-directory> [--runtime <tool>] [--read-only]   serve MCP over stdio
 
 Options: --runtime <name> (default: cli)  --cwd <dir>  --json
@@ -96,6 +98,20 @@ async function main(argv: string[]): Promise<number> {
     const { demo } = await import('./demo.ts');
     console.log(demo(fileURLToPath(import.meta.url)));
     return 0;
+  }
+
+  if (cmd === 'doctor' && a.flags.mcp) {
+    const target = str(a.flags, 'target');
+    const id = str(a.flags, 'expect-id');
+    if (a.positional.length !== 1 || Object.keys(a.flags).some(flag => !['mcp', 'target', 'expect-id', 'json'].includes(flag)) || !!target === !!id || (target && !['claude-code', 'codex'].includes(target))) {
+      throw new Error('use doctor --mcp with either --target claude-code|codex or --expect-id <full-id>');
+    }
+    if (process.stdin.isTTY) throw new Error(id ? 'Pipe the JSON result of a hivemem_recall tool call to this command.' : `Pipe the output of \`${target === 'codex' ? 'codex mcp get hivemem --json' : 'claude mcp get hivemem'}\` to this command.`);
+    const { checkHost, checkRecall, readReport } = await import('../mcp/diagnose.ts');
+    const input = await readReport(process.stdin);
+    const result = id ? checkRecall(input, id) : checkHost(input, target!);
+    print(a, result, () => `${result.state}: ${result.next}`);
+    return ['configured', 'connected', 'recall-matched'].includes(result.state) ? 0 : 1;
   }
 
   if (cmd === 'setup' && a.flags.mcp) {

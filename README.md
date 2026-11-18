@@ -132,6 +132,8 @@ Use `--runtime cursor`. HiveMem replies in Cursor's `additional_context` format.
 <details>
 <summary><b>Other local tools and frameworks</b>: stdio MCP</summary>
 
+Already connected? [Verify that your host recalled a known memory](docs/mcp.md#verify-a-recall-in-your-own-project) with `hivemem doctor --mcp`.
+
 Generate ready-to-use paths with `hivemem setup --mcp --target claude-code --cwd /path/to/project --output hivemem.mcp.json`, then load it with `claude --mcp-config hivemem.mcp.json`. Use `--target codex` to print a TOML section, or `--target generic` for other JSON clients. See the [real-host acceptance results](docs/host-acceptance.md): Codex reads passed; write approval and other hosts remain to be verified.
 
 Launch `hivemem mcp --cwd /absolute/path/to/project --runtime your-tool-name` from a compatible MCP client. It exposes recall, remember, show, inbox and project tools; add `--read-only` to disable writes. Agent observations follow the existing trust rules. See the [MCP configuration guide](docs/mcp.md) for absolute executable paths and client setup. Remote Streamable HTTP remains planned.

@@ -26,7 +26,7 @@ const report = { host: 'codex', version: null, date: new Date().toISOString(), p
   configuration: false, project: false, recall: false, inbox: false, write: write ? 'pending' : 'not-requested', passed: false };
 try {
   report.version = execFileSync(bin, ['--version'], { encoding: 'utf8' }).trim();
-  run('remember', 'Acceptance convention: API fields use snake_case.', '--as', 'user');
+  const seeded = JSON.parse(run('remember', 'Acceptance convention: API fields use snake_case.', '--as', 'user', '--json'));
   const configFile = join(hostConfig, 'config.toml');
   run('setup', '--mcp', '--target', 'codex', '--output', configFile, ...(write ? [] : ['--read-only']));
   // Have the real host parse the generated TOML before attempting any model call.
@@ -63,11 +63,16 @@ try {
   const completed = events.filter(event => event.type === 'item.completed' && event.item?.type === 'mcp_tool_call').map(event => event.item);
   const result = name => {
     const item = completed.find(item => item.server === 'hivemem' && item.tool === name && item.status === 'completed' && !item.error);
-    assert.ok(item, `Host did not complete ${name}; check tool approval policy`);
+    assert.ok(item && item.result && !item.result.is_error && !item.result.isError, `Host did not complete ${name}; check tool approval policy`);
     return item.result.structured_content ?? JSON.parse(item.result.content.find(part => part.type === 'text').text);
   };
   assert.equal(result('hivemem_project').project.root, project); report.project = true;
-  assert.match(result('hivemem_recall').text, /API fields use snake_case/); report.recall = true;
+  const recalled = result('hivemem_recall');
+  assert.match(recalled.text, /API fields use snake_case/);
+  const verified = JSON.parse(execFileSync(process.execPath, [cli, 'doctor', '--mcp', '--expect-id', seeded.id, '--json'], {
+    cwd: project, env, input: JSON.stringify(recalled), encoding: 'utf8',
+  }));
+  assert.equal(verified.recallVerified, true); report.recall = true;
   const inbox = result('hivemem_inbox'); report.inbox = true;
   if (write) {
     const saved = result('hivemem_remember');
