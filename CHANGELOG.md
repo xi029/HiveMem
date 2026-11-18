@@ -5,6 +5,7 @@
 ### Fixed
 
 - Codex host acceptance keeps verified tool results on timeout and reports host startup, MCP setup replies and the last observed tool without storing transcripts.
+- The live Codex read check requests all three independent reads together at low reasoning effort and reports when each result was verified. A failed model turn fails the check even if the host exits cleanly.
 - SQLite startup installs its busy timeout before WAL initialization and closes the handle if initialization fails, covering concurrent hook/MCP processes.
 - Corroboration cannot promote a claim blocked by a user statement or unresolved same-key conflict.
 - Independently created same-key records are reconciled after operation ingestion, in any arrival order.

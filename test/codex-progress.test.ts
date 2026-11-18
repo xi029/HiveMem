@@ -35,6 +35,19 @@ test('a denied tool cannot pass and raw host error text stays out of the diagnos
   assert.equal((progress as {lastToolState: string}).lastToolState, 'failed');
 });
 
+test('a failed model turn cannot pass on a clean process exit', async () => {
+  const failure = JSON.stringify({type: 'turn.failed', error: {message: 'private-host-detail'}});
+  await assert.rejects(watchCodex(process.execPath, ['-e', `console.log(${JSON.stringify(failure)})`], {}, {}, () => assert.fail()),
+    { message: 'Codex reported a failed turn' });
+});
+
+test('verified reads start one bounded wait for exit, even if the host repeats them', async () => {
+  const result = item('hivemem_inbox', 'item.completed', {status: 'completed', result: {structuredContent: {items: []}}});
+  const child = `const emit=()=>console.log(${JSON.stringify(JSON.stringify(result))}); emit(); const repeats=setInterval(emit,50); setTimeout(()=>clearInterval(repeats),1800);`;
+  await assert.rejects(watchCodex(process.execPath, ['-e', child], {}, {}, () => true, 5000, 450),
+    /timed out finishing the turn after tool verification/);
+});
+
 test('stdio markers require successful protocol replies and no memory store', () => {
   const dir = mkdtempSync(join(tmpdir(), 'hivemem-probe-'));
   try {

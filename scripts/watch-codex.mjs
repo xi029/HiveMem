@@ -17,7 +17,7 @@ export function nextCheck(report, stage, savedId) {
 }
 
 // Retain one bounded JSONL frame, never a transcript. Shell and assistant items are ignored.
-export function watchCodex(bin, args, options, progress, onTool, timeoutMs = 180_000) {
+export function watchCodex(bin, args, options, progress, onTool, timeoutMs = 180_000, finishMs = 120_000) {
   return new Promise((resolve, reject) => {
     const child = spawn(bin, args, { ...options, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] });
     let frame = '';
@@ -33,13 +33,15 @@ export function watchCodex(bin, args, options, progress, onTool, timeoutMs = 180
       child.kill('SIGKILL');
       child.stdout.destroy();
     }
-    const timer = setTimeout(() => stop('Host timed out'), timeoutMs);
+    let finishing = false;
+    let timer = setTimeout(() => stop('Host timed out waiting for verified tool results'), timeoutMs);
     function consume(line) {
       if (!line.trim()) return;
       let event;
       try { event = JSON.parse(line); } catch { return stop('Host emitted invalid JSONL'); }
       if (event?.type === 'thread.started') progress.threadStarted = true;
       if (event?.type === 'turn.started') progress.turnStarted = true;
+      if (event?.type === 'turn.failed') return stop('Codex reported a failed turn');
       const item = event?.item;
       if (item?.type !== 'mcp_tool_call' || item.server !== 'hivemem' ||
         !['hivemem_project', 'hivemem_recall', 'hivemem_remember', 'hivemem_inbox'].includes(item.tool)) return;
@@ -54,8 +56,13 @@ export function watchCodex(bin, args, options, progress, onTool, timeoutMs = 180
       progress.lastToolState = 'returned';
       try {
         const data = item.result.structured_content ?? item.result.structuredContent ?? JSON.parse(item.result.content.find(part => part.type === 'text').text);
-        onTool(item.tool, data);
+        const allVerified = onTool(item.tool, data);
         progress.lastToolState = 'verified';
+        if (allVerified === true && !finishing) {
+          finishing = true;
+          clearTimeout(timer);
+          timer = setTimeout(() => stop('Host timed out finishing the turn after tool verification'), finishMs);
+        }
       } catch { stop(`Unexpected result for ${item.tool}`); }
     }
     child.once('spawn', () => { progress.hostStarted = true; });

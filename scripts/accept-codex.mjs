@@ -47,14 +47,17 @@ try {
   const observedArgs = ['--import', new URL('./host-probe.mjs', import.meta.url).href, ...serverArgs];
   const override = `mcp_servers={hivemem={command=${q(command)},args=[${observedArgs.map(q).join(',')}],env={HIVEMEM_HOME=${q(env.HIVEMEM_HOME)},HIVEMEM_ACCEPT_DIR=${q(hostConfig)}},required=true}}`;
   const content = 'Host acceptance observation: smoke tests run with npm test.';
-  const prompt = 'Integration acceptance test. Use only hivemem MCP tools, without shell commands or file reads. '
-    + 'Call hivemem_project, then hivemem_recall with query "Acceptance convention". '
-    + (write ? `Then call hivemem_remember with content exactly ${q(content)}. ` : '')
-    + 'Finally call hivemem_inbox and report results. Do not attempt alternate tools if approval is denied.';
+  const reads = 'hivemem_recall with query "Acceptance convention", hivemem_project, and hivemem_inbox';
+  const prompt = 'Use the HiveMem MCP tools only. '
+    + (write ? `Call hivemem_project, then hivemem_recall with query "Acceptance convention", then hivemem_remember with content exactly ${q(content)}, then hivemem_inbox. `
+      : `Call these three independent reads together now: ${reads}. `)
+    + 'After receiving the results, reply briefly. If approval is denied, stop.';
   stage = 'live session';
+  const started = performance.now();
+  report.verifiedAtMs = {};
   let inboxIds = [];
   await watchCodex(bin, ['exec', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
-    '-C', project, '--json', '-c', override, prompt], { cwd: project, env }, progress, (name, data) => {
+    '-C', project, '--json', '-c', 'model_reasoning_effort="low"', '-c', override, prompt], { cwd: project, env }, progress, (name, data) => {
     if (name === 'hivemem_project') {
       assert.equal(data.project.root, project); report.project = true;
     } else if (name === 'hivemem_recall') {
@@ -68,7 +71,10 @@ try {
     } else {
       assert.ok(write); assert.equal(data.status, 'tentative'); assert.ok(data.id); savedId = data.id;
     }
+    report.verifiedAtMs[name] ??= Math.round(performance.now() - started);
+    return report.project && report.recall && report.inbox && (!write || (savedId && inboxIds.includes(savedId)));
   });
+  report.hostElapsedMs = Math.round(performance.now() - started);
   for (const required of ['project', 'recall', 'inbox']) if (!report[required]) throw new Error(`Missing verified hivemem_${required} result`);
   if (write) {
     stage = 'independent write verification';
