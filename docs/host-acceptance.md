@@ -24,6 +24,8 @@ With an isolated `CLAUDE_CONFIG_DIR`, we generated a read-only `.mcp.json` in th
 
 On 2026-11-18 the new `doctor --mcp` check classified the actual Claude Code project report as `pending-approval` and the actual Codex stdio entry as `configured`. Neither status is a successful recall. The offline installed-package test matched the seeded ID against a real SDK tool result. A live Codex 0.167.0 rerun parsed the configuration, then timed out after 180 seconds without a verified tool result. The successful live reads on 2026-11-16 remain a separate observation; this rerun did not establish recall or write access.
 
+Two subsequent instrumented read-only runs on 2026-11-18 (Windows, Codex 0.167.0) reached the same boundary: the server replied to setup and tool listing, and the host returned the expected project root. Neither run emitted a recall-start event or a verified recall or inbox result before its 180-second deadline. The final run removed its fixture. The next diagnostic is to inspect the host turn after `hivemem_project`; these observations do not establish why Codex stopped progressing.
+
 This is an opt-in real model call, using your existing Codex login and quota. It is deliberately excluded from `npm run check` and CI.
 
 ```bash
@@ -33,6 +35,8 @@ npm run test:host:codex -- --bin /absolute/path/to/codex.exe
 ```
 
 The script generates TOML, asks the real host to parse it in a temporary `CODEX_HOME`, then runs an ephemeral Codex session with only the test MCP server configured. Authentication uses your normal Codex profile; it is not copied. The server is read-only by default. The script asserts actual completed tool events and returned data, not the model's final prose, prints a compact JSON report, and removes its temporary project and store.
+
+If the session times out, inspect `progress` and `nextCheck` in the final JSON report. `hostStarted` means the Codex process launched; `threadStarted` and `turnStarted` come from its event stream. In the test server only, `serverLaunched` records the Node process starting, `protocolReplied` a successful initialization/discovery reply, and `toolsListed` a successful tool-list reply. These flags are independent: a client need not request every step. `lastTool` and `lastToolState` distinguish a started call, a failed call, a returned result and a verified result. The top-level project, recall and inbox checks keep their verified values even if a later step times out. A false flag means no evidence was observed; it does not establish a root cause. The run still fails on timeout. No raw host events, stderr or memory text are included in the report.
 
 To additionally test writing **when your host's approval policy permits it**:
 
